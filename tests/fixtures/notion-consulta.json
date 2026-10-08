@@ -1,0 +1,37 @@
+{
+  "has_more": false,
+  "results": [
+    {
+      "id": "aaa11111-0000-0000-0000-000000000001",
+      "url": "https://www.notion.so/Aula-1-aaa",
+      "properties": {
+        "Nome": { "type": "title", "title": [{ "plain_text": "Aula 1" }] },
+        "Data": { "type": "date", "date": { "start": "2026-10-07" } },
+        "Matéria": { "type": "select", "select": { "name": "Biologia" } },
+        "Feito": { "type": "checkbox", "checkbox": true },
+        "Tópicos": { "type": "rich_text", "rich_text": [{ "plain_text": "Citologia; " }, { "plain_text": "Membrana" }] },
+        "Observações": { "type": "rich_text", "rich_text": [] }
+      }
+    },
+    {
+      "id": "bbb22222-0000-0000-0000-000000000002",
+      "url": "https://www.notion.so/Aula-2-bbb",
+      "properties": {
+        "Data": { "type": "date", "date": { "start": "2026-10-01T00:30:00.000-03:00" } },
+        "Matéria": { "type": "select", "select": { "name": "Química" } },
+        "Feito": { "type": "checkbox", "checkbox": false },
+        "Tópicos": { "type": "rich_text", "rich_text": [] },
+        "Observações": { "type": "rich_text", "rich_text": [{ "plain_text": "Rever" }] }
+      }
+    },
+    {
+      "id": "ccc33333-0000-0000-0000-000000000003",
+      "url": "https://www.notion.so/Sem-data-ccc",
+      "properties": {
+        "Data": { "type": "date", "date": null },
+        "Matéria": { "type": "select", "select": { "name": "Física" } },
+        "Feito": { "type": "checkbox", "checkbox": false }
+      }
+    }
+  ]
+}

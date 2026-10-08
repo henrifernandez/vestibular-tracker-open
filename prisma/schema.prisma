@@ -1,0 +1,175 @@
+// Schema do banco de dados do Monitor de Acertos (vestibular-tracker)
+// Provider: PostgreSQL (recomendado: Neon ou Supabase, camada gratuita)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Uma prova/vestibular que a pessoa está acompanhando (ex: ENEM, Fuvest, a prova de uma escola).
+// dataProva: dia da prova (dia puro, meia-noite UTC), usado na contagem regressiva.
+// metaPercentual: "quero acertar X%"; vira uma Meta por área (veja lib/provas.ts).
+// metaNota: meta da nota estimada (TRI) quando a prova tem áreas do ENEM.
+model Prova {
+  id             String   @id @default(cuid())
+  slug           String   @unique // gerado a partir do nome, ex: "enem-2026"
+  nome           String
+  descricao      String?
+  dataProva      DateTime?
+  metaPercentual Int?
+  metaNota       Float?
+  areas          Area[]
+  simulados      Simulado[]
+  createdAt      DateTime @default(now())
+}
+
+// Uma área/prova objetiva dentro de um vestibular (ex: Matemática, Linguagens, Humanas, Natureza, Redação)
+// peso: usado na média ponderada da nota estimada (padrão 1, igual para todas).
+model Area {
+  id             String       @id @default(cuid())
+  provaId        String
+  prova          Prova        @relation(fields: [provaId], references: [id], onDelete: Cascade)
+  nome           String
+  totalQuestoes  Int          // total de questões dessa área na prova (ex: 45, 72, 90)
+  ordem          Int          @default(0)
+  peso           Int          @default(1)
+  metas          Meta[]
+  resultados     Resultado[]
+  conteudosRevisao ConteudoRevisao[]
+
+  @@unique([provaId, nome])
+}
+
+// Meta de uma área. O app grava uma por área (label "Minha meta") quando a pessoa define a meta
+// da prova; o modelo aceita várias (ex: conservadora e agressiva) para quem quiser.
+model Meta {
+  id           String   @id @default(cuid())
+  areaId       String
+  area         Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  label        String   // ex: "Minha meta", "Meta conservadora"
+  acertosAlvo  Int?      // meta em número de acertos
+  notaAlvo     Float?    // meta em nota estimada (quando aplicável, ex: ENEM)
+  observacao   String?
+  createdAt    DateTime @default(now())
+}
+
+// Um simulado / prova realizada em uma data
+model Simulado {
+  id          String       @id @default(cuid())
+  provaId     String
+  prova       Prova        @relation(fields: [provaId], references: [id], onDelete: Cascade)
+  data        DateTime
+  nome        String?      // ex: "Simulado 3"
+  observacao  String?
+  resultados  Resultado[]
+  createdAt   DateTime     @default(now())
+}
+
+// Resultado de uma área dentro de um simulado
+model Resultado {
+  id               String            @id @default(cuid())
+  simuladoId       String
+  simulado         Simulado          @relation(fields: [simuladoId], references: [id], onDelete: Cascade)
+  areaId           String
+  area             Area              @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  acertos          Int
+  totalQuestoes    Int
+  notaEstimada     Float?
+  textoRedacao     String?           @db.Text
+  avaliacaoIA      Json?
+  conteudosErrados ConteudoErrado[]
+  createdAt        DateTime          @default(now())
+
+  @@unique([simuladoId, areaId])
+}
+
+// Conteúdo/assunto específico errado dentro de um resultado (ex: "frações", "funções do 2º grau")
+model ConteudoErrado {
+  id           String    @id @default(cuid())
+  resultadoId  String
+  resultado    Resultado @relation(fields: [resultadoId], references: [id], onDelete: Cascade)
+  conteudo     String
+  createdAt    DateTime  @default(now())
+}
+
+// Uma linha do plano de estudo: um dia de uma matéria, com tópicos e se foi feito.
+// Vem de importação de CSV, da sincronização com o Notion ou de cadastro manual.
+// chaveExterna evita duplicar a mesma linha a cada importação (upsert):
+//   CSV => "csv:<matéria normalizada>:<AAAA-MM-DD>:<hash do tópico>", Notion => URL da página.
+// data guarda o dia puro (meia-noite UTC); formatar sempre com timeZone "UTC" (lib/datas.ts).
+// ativo = false quando o item sumiu da última sincronização (histórico preservado).
+// origem: CSV | NOTION | MANUAL
+model PlanoEstudo {
+  id           String   @id @default(cuid())
+  chaveExterna String?  @unique
+  materia      String
+  data         DateTime
+  topicos      String?
+  feito        Boolean  @default(false)
+  observacoes  String?  @db.Text
+  ativo        Boolean  @default(true)
+  origem       String   @default("CSV")
+  syncedAt     DateTime @default(now())
+
+  @@index([materia, data])
+}
+
+// Conteúdo a revisar: cadastrado à mão ou vindo dos ConteudoErrado dos simulados.
+// assuntoNorm (minúsculas, sem acento, sem espaços extras) evita duplicata.
+// prioridade: ALTA | MEDIA | BAIXA. status: PENDENTE | REVISADO. origem: MANUAL | SIMULADO.
+// (strings validadas em lib/revisao.ts, como os demais campos de texto do schema)
+model ConteudoRevisao {
+  id          String       @id @default(cuid())
+  assunto     String
+  assuntoNorm String
+  disciplina  String       @default("A classificar")
+  areaId      String?
+  area        Area?        @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  prioridade  String       @default("MEDIA")
+  status      String       @default("PENDENTE")
+  vezesErrado Int          @default(0)
+  origem      String       @default("MANUAL")
+  observacao  String?      @db.Text
+  revisadoEm  DateTime?
+  logs        RevisaoLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([assuntoNorm, disciplina])
+  @@index([status, prioridade])
+}
+
+// Uma linha por vez que o conteúdo foi marcado como revisado (histórico).
+model RevisaoLog {
+  id         String          @id @default(cuid())
+  conteudoId String
+  conteudo   ConteudoRevisao @relation(fields: [conteudoId], references: [id], onDelete: Cascade)
+  revisadoEm DateTime        @default(now())
+  confianca  Int?            // 1 a 3
+
+  @@index([conteudoId, revisadoEm])
+}
+
+// Evento do calendário de estudos (bloco de estudo ou data de prova).
+// Importado de CSV ou .ics, ou cadastrado à mão. dia guarda o dia puro (meia-noite UTC);
+// inicio e fim são "HH:MM" no horário de Brasília. tipo: BLOCO | PROVA. origem: CSV | ICS | MANUAL.
+// chave evita duplicar o mesmo evento a cada importação (upsert).
+model EventoCalendario {
+  id         String   @id @default(cuid())
+  chave      String   @unique
+  dia        DateTime
+  inicio     String?
+  fim        String?
+  titulo     String
+  categoria  String   @default("")
+  tipo       String   @default("BLOCO")
+  descricao  String?  @db.Text
+  origem     String   @default("MANUAL")
+  createdAt  DateTime @default(now())
+
+  @@index([dia])
+}

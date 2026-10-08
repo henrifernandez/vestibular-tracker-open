@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Prova" ADD COLUMN "dataProva" TIMESTAMP(3),
+ADD COLUMN "metaPercentual" INTEGER,
+ADD COLUMN "metaNota" DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "Area" ADD COLUMN "peso" INTEGER NOT NULL DEFAULT 1;

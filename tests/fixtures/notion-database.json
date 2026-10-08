@@ -1,0 +1,11 @@
+{
+  "title": [{ "plain_text": "Plano de estudo" }],
+  "properties": {
+    "Nome": { "type": "title" },
+    "Data": { "type": "date" },
+    "Matéria": { "type": "select" },
+    "Feito": { "type": "checkbox" },
+    "Tópicos": { "type": "rich_text" },
+    "Observações": { "type": "rich_text" }
+  }
+}
