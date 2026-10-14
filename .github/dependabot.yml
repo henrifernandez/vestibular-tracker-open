@@ -1,11 +1,25 @@
 version: 2
 updates:
+  # Dependências do projeto. Versões maiores (Next, Prisma, React, Tailwind, Recharts) mudam a API
+  # e exigem migração com código, então ficam de fora dos PRs automáticos e são feitas à mão.
+  # Atualizações menores e de correção chegam agrupadas em um PR só.
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      menores-e-correcoes:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+  # Ações do GitHub Actions, em um PR só. O CI mostra se alguma versão nova quebra o fluxo.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      acoes:
+        patterns: ["*"]
