@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analisarCsvPlano, MAX_LINHAS_PLANO } from "@/lib/plano";
-import { MODELO_CSV_PLANO } from "@/lib/plano-modelo";
+import { MODELO_CSV_PLANO, modeloCsvPlano } from "@/lib/plano-modelo";
 import { neutralizarFormula } from "@/lib/csv";
 import { calcularResumo, resolverPeriodo } from "@/lib/resumo";
 import { diaParaDate, formatarDiaMes, hojeEmSaoPaulo, normalizarDia, somarDias } from "@/lib/datas";
@@ -35,6 +35,11 @@ describe("importação de CSV do plano", () => {
     expect(r.linhas).toHaveLength(3);
     expect(r.linhas[0]).toMatchObject({ data: "2026-03-02", materia: "Biologia", feito: true });
     expect(r.linhas[0].chaveExterna).toBe("csv:biologia:2026-03-02");
+  });
+  it("gera o modelo com datas a partir de hoje, sem erros", () => {
+    const r = analisarCsvPlano(modeloCsvPlano("2026-10-14"));
+    expect(r.erros).toEqual([]);
+    expect(r.linhas.map((l) => l.data)).toEqual(["2026-10-14", "2026-10-15", "2026-10-16"]);
   });
   it("aceita ponto e vírgula, BOM, datas brasileiras e feito em português", () => {
     const csv = "﻿data;materia;feito\r\n07/10/2026;Química;sim\r\n08/10/2026;Química;não\r\n";

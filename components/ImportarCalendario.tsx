@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MODELO_CSV_CALENDARIO } from "@/lib/calendario-modelo";
+import { useEffect, useState } from "react";
+import { MODELO_CSV_CALENDARIO, modeloCsvCalendario } from "@/lib/calendario-modelo";
 
 type Previa = {
   total: number;
@@ -9,7 +9,10 @@ type Previa = {
   amostra: { dia: string; inicio?: string | null; titulo: string; tipo: string }[];
 };
 
-export default function ImportarCalendario({ aoImportar }: { aoImportar: () => void }) {
+// `desativado` mostra o bloco sem permitir envio (demonstração): o formato fica visível e o modelo pode ser baixado.
+export default function ImportarCalendario({ aoImportar, desativado = false }: { aoImportar: () => void; desativado?: boolean }) {
+  const [modelo, setModelo] = useState(MODELO_CSV_CALENDARIO);
+  useEffect(() => setModelo(modeloCsvCalendario()), []);
   const [conteudo, setConteudo] = useState("");
   const [formato, setFormato] = useState<"csv" | "ics">("csv");
   const [previa, setPrevia] = useState<Previa | null>(null);
@@ -53,7 +56,7 @@ export default function ImportarCalendario({ aoImportar }: { aoImportar: () => v
   }
 
   function baixarModelo() {
-    const url = URL.createObjectURL(new Blob([MODELO_CSV_CALENDARIO], { type: "text/csv;charset=utf-8" }));
+    const url = URL.createObjectURL(new Blob([modelo],{ type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
     a.download = "modelo-calendario.csv";
@@ -74,15 +77,15 @@ export default function ImportarCalendario({ aoImportar }: { aoImportar: () => v
         <button type="button" onClick={baixarModelo} className={botao}>
           Baixar modelo CSV
         </button>
-        <label className={botao + " cursor-pointer"}>
+        <label className={botao + (desativado ? " opacity-40 pointer-events-none" : " cursor-pointer")}>
           Escolher arquivo
-          <input type="file" accept=".ics,.csv,text/calendar,text/csv" className="sr-only" onChange={(e) => lerArquivo(e.target.files?.[0])} />
+          <input type="file" accept=".ics,.csv,text/calendar,text/csv" disabled={desativado} className="sr-only" onChange={(e) => lerArquivo(e.target.files?.[0])} />
         </label>
       </div>
       <div className="flex gap-3 text-xs text-ink/70">
         {(["csv", "ics"] as const).map((f) => (
           <label key={f} className="flex items-center gap-1.5">
-            <input type="radio" name="formato-calendario" checked={formato === f} onChange={() => { setFormato(f); setPrevia(null); }} />
+            <input type="radio" name="formato-calendario" disabled={desativado} checked={formato === f} onChange={() => { setFormato(f); setPrevia(null); }} />
             {f === "csv" ? "CSV" : "iCalendar (.ics)"}
           </label>
         ))}
@@ -92,7 +95,8 @@ export default function ImportarCalendario({ aoImportar }: { aoImportar: () => v
       </label>
       <textarea
         id="conteudo-calendario"
-        value={conteudo}
+        value={desativado ? modelo : conteudo}
+        readOnly={desativado}
         onChange={(e) => { setConteudo(e.target.value); setPrevia(null); }}
         rows={4}
         placeholder="Cole o conteúdo aqui ou escolha um arquivo"
@@ -100,12 +104,18 @@ export default function ImportarCalendario({ aoImportar }: { aoImportar: () => v
       />
       <button
         type="button"
-        disabled={!conteudo.trim() || ocupado}
+        disabled={desativado || !conteudo.trim() || ocupado}
         onClick={() => enviar(false)}
         className="text-sm px-4 py-1.5 rounded-full bg-accent text-white transition hover:opacity-90 disabled:opacity-40"
       >
         Ver prévia
       </button>
+      {desativado && (
+        <p className="text-xs text-ink/60">
+          Na demonstração a importação fica desativada. O texto acima é o formato do CSV, que você pode baixar. No seu app, a
+          prévia aparece antes de confirmar.
+        </p>
+      )}
       {mensagem && <p role="status" className="text-sm text-ink/70">{mensagem}</p>}
       {previa && (
         <div className="space-y-2">

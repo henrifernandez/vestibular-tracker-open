@@ -83,7 +83,7 @@ export default function ResumoSemanal() {
 
       {erro && <p className="text-sm text-warn">Não foi possível carregar o resumo.</p>}
 
-      {!DEMO && <ImportarPlano aoImportar={carregar} />}
+      <ImportarPlano aoImportar={carregar} desativado={DEMO} />
       {!DEMO && <SincronizarNotion aoSincronizar={carregar} />}
 
       {!resumo || !plano || !totais ? (

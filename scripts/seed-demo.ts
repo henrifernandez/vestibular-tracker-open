@@ -15,6 +15,10 @@ import { diaParaDate, hojeEmSaoPaulo, somarDias } from "../lib/datas";
 
 const prisma = new PrismaClient();
 
+// As datas das provas valem no painel e no calendário, para os dois mostrarem a mesma contagem.
+const DIAS_ATE_ENEM = 32;
+const DIAS_ATE_FUVEST = 55;
+
 const MATERIAS_PLANO: { materia: string; topicos: string[] }[] = [
   { materia: "Biologia", topicos: ["Citologia; Membrana plasmática", "Genética; 1ª lei de Mendel", "Ecologia; Cadeias alimentares", "Fisiologia humana; Sistema digestório"] },
   { materia: "Química", topicos: ["Estequiometria", "Termoquímica; Entalpia", "Química orgânica; Funções oxigenadas", "Soluções; Concentração"] },
@@ -49,12 +53,12 @@ async function main() {
   // 2. Duas provas de exemplo, com data futura e meta
   const enem = await garantirProvaDeModelo(prisma, modeloPorId("enem")!, {
     nome: "ENEM (exemplo)",
-    dataProva: hojeMais(hoje, 32),
+    dataProva: hojeMais(hoje, DIAS_ATE_ENEM),
     metaPercentual: 75,
   });
   const fuvest = await garantirProvaDeModelo(prisma, modeloPorId("fuvest")!, {
     nome: "Fuvest 1ª fase (exemplo)",
-    dataProva: hojeMais(hoje, 55),
+    dataProva: hojeMais(hoje, DIAS_ATE_FUVEST),
     metaPercentual: 70,
   });
   await prisma.prova.update({ where: { id: enem.id }, data: { metaNota: 750 } });
@@ -131,7 +135,7 @@ async function main() {
       origem: "CSV",
     });
   }
-  for (const [offset, titulo] of [[20, "Simulado geral (exemplo)"], [45, "Prova de exemplo"]] as const) {
+  for (const [offset, titulo] of [[DIAS_ATE_ENEM, "ENEM (exemplo)"], [DIAS_ATE_FUVEST, "Fuvest 1ª fase (exemplo)"]] as const) {
     const dia = somarDias(hoje, offset);
     eventos.push({ chave: `demo:prova:${dia}`, dia: diaParaDate(dia)!, inicio: null, fim: null, titulo, categoria: "", tipo: "PROVA", descricao: null, origem: "CSV" });
   }

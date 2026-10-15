@@ -118,7 +118,7 @@ export default function Calendario() {
       </div>
 
       {erro && <p className="text-sm text-warn">Não foi possível carregar o calendário.</p>}
-      {!DEMO && <ImportarCalendario aoImportar={carregar} />}
+      <ImportarCalendario aoImportar={carregar} desativado={DEMO} />
 
       {proximasProvas.length > 0 && (
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" aria-label="Contagem das provas">

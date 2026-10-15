@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analisarCsvCalendario, analisarIcs, lerDataIcs } from "@/lib/calendario";
-import { MODELO_CSV_CALENDARIO } from "@/lib/calendario-modelo";
+import { MODELO_CSV_CALENDARIO, modeloCsvCalendario } from "@/lib/calendario-modelo";
 
 const ics = (corpo: string) => `BEGIN:VCALENDAR\r\nVERSION:2.0\r\n${corpo}END:VCALENDAR\r\n`;
 
@@ -10,6 +10,12 @@ describe("CSV do calendário", () => {
     expect(r.erros).toEqual([]);
     expect(r.eventos).toHaveLength(2);
     expect(r.eventos[1]).toMatchObject({ tipo: "PROVA", dia: "2026-03-03" });
+  });
+  it("gera o modelo com datas a partir de hoje, sem erros", () => {
+    const r = analisarCsvCalendario(modeloCsvCalendario("2026-10-14"));
+    expect(r.erros).toEqual([]);
+    expect(r.eventos.map((e) => e.dia)).toEqual(["2026-10-15", "2026-11-13"]);
+    expect(r.eventos[1]).toMatchObject({ tipo: "PROVA" });
   });
   it("reporta hora inválida e dia inválido por linha", () => {
     const r = analisarCsvCalendario("data,inicio,titulo\n2026-03-01,25:00,A\n2026-02-30,10:00,B\n2026-03-02,10:00,C\n");
