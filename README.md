@@ -6,9 +6,11 @@ Acompanhe simulados, revisão por erros, plano de estudo e calendário na reta f
 
 [English version](README.en.md)
 
-## Demonstração
+> **O que você baixa.** O app completo, com login e todas as funções. A visualização online é este mesmo código com um interruptor (`DEMO_MODE`) que a deixa somente leitura, sem login e com dados fictícios.
 
-Há uma instância pública com **dados fictícios e somente leitura** (nada do que você clicar altera dados). O endereço fica na descrição do repositório.
+## Visualização ao vivo
+
+Há uma instância pública, **somente leitura e com dados fictícios** (nada do que você clicar altera dados), para você conhecer o app sem instalar. O endereço fica na descrição do repositório. Para usar com os seus dados, rode a sua própria cópia (veja o "Início rápido").
 
 ![Painel](docs/capturas/painel-1280.png)
 
@@ -38,6 +40,23 @@ Next.js 16 (Pages Router), TypeScript, Prisma 5, PostgreSQL, Tailwind e Recharts
 
 ## Início rápido
 
+### Com Docker (app e banco, em um comando)
+
+Pré-requisito: Docker.
+
+```bash
+git clone https://github.com/henrifernandez/vestibular-tracker-open.git
+cd vestibular-tracker-open
+cp .env.example .env     # preencha ADMIN_PASSWORD e SESSION_SECRET
+docker compose up --build
+```
+
+Abra http://localhost:3000 e entre com a senha de administrador. As tabelas são criadas na partida, e os dados ficam num volume do Docker: `docker compose down` mantém, `docker compose down -v` apaga.
+
+O compose só escuta em `localhost` e se recusa a subir sem `ADMIN_PASSWORD` e `SESSION_SECRET`. Como o acesso é por HTTP, ele define `COOKIE_SEM_HTTPS=true` (sem isso o navegador descarta o cookie de sessão). Se você puser o app atrás de HTTPS, defina `COOKIE_SEM_HTTPS=false` no `.env`.
+
+### Sem Docker (Node.js)
+
 Pré-requisitos: Node.js 20 ou mais novo e um Postgres (local com Docker, ou gratuito no [Neon](https://neon.tech)).
 
 ```bash
@@ -50,7 +69,7 @@ cp .env.example .env     # preencha DATABASE_URL, ADMIN_PASSWORD e SESSION_SECRE
 Para um Postgres local:
 
 ```bash
-docker compose up -d     # sobe o banco em localhost:5433
+docker compose up -d db  # sobe só o banco em localhost:5433
 # no .env: DATABASE_URL="postgresql://tracker:tracker@localhost:5433/tracker"
 ```
 
@@ -82,6 +101,7 @@ Quer ver o app cheio de dados antes de usar? Use um banco **separado** e rode `D
 | `ADMIN_PASSWORD` | sim (exceto na demo) | Senha única de login |
 | `SESSION_SECRET` | sim (exceto na demo) | Segredo que assina o cookie de sessão (mínimo recomendado: 32 caracteres aleatórios) |
 | `DEMO_MODE` | não | `true` liga o modo demonstração (somente leitura, sem login) |
+| `COOKIE_SEM_HTTPS` | não | `true` tira a marca `Secure` do cookie de sessão. Só para acesso por HTTP fora do `localhost` (o `docker compose` já define). Atrás de HTTPS, deixe de fora |
 | `GEMINI_API_KEY` | não | Habilita "Avaliar com IA" na redação. Chave gratuita em [AI Studio](https://aistudio.google.com/app/apikey) |
 | `GEMINI_MODELS` | não | Lista de modelos Gemini, separados por vírgula, em ordem de preferência |
 | `AVALIACOES_POR_DIA` | não | Limite diário de avaliações de redação (padrão: 20) |

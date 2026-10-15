@@ -6,9 +6,11 @@ Track mock exams, error-driven review, a study plan and a calendar during the fi
 
 [Versão em português](README.md)
 
-## Demo
+> **What you download.** The complete app, with login and every feature. The online preview is this same code with a switch (`DEMO_MODE`) that makes it read-only, login-free and filled with fictitious data.
 
-A public instance runs with **fictitious, read-only data**. Its address is in the repository description.
+## Live preview
+
+A public instance runs **read-only with fictitious data** (nothing you click changes anything), so you can try the app without installing it. Its address is in the repository description. To use your own data, run your own copy (see "Quick start").
 
 ![Dashboard](docs/capturas/painel-1280.png)
 
@@ -34,6 +36,23 @@ Next.js 16 (Pages Router), TypeScript, Prisma 5, PostgreSQL, Tailwind and Rechar
 
 ## Quick start
 
+### With Docker (app and database, one command)
+
+Requirement: Docker.
+
+```bash
+git clone https://github.com/henrifernandez/vestibular-tracker-open.git
+cd vestibular-tracker-open
+cp .env.example .env     # fill ADMIN_PASSWORD and SESSION_SECRET
+docker compose up --build
+```
+
+Open http://localhost:3000 and sign in with the admin password. Tables are created on startup, and data lives in a Docker volume: `docker compose down` keeps it, `docker compose down -v` deletes it.
+
+The compose file only listens on `localhost` and refuses to start without `ADMIN_PASSWORD` and `SESSION_SECRET`. Because access is over plain HTTP, it sets `COOKIE_SEM_HTTPS=true` (otherwise the browser drops the session cookie). If you put the app behind HTTPS, set `COOKIE_SEM_HTTPS=false` in `.env`.
+
+### Without Docker (Node.js)
+
 Requirements: Node.js 20+ and a Postgres database (local with Docker, or free on [Neon](https://neon.tech)).
 
 ```bash
@@ -41,12 +60,14 @@ git clone https://github.com/henrifernandez/vestibular-tracker-open.git
 cd vestibular-tracker-open
 npm install
 cp .env.example .env     # fill DATABASE_URL, ADMIN_PASSWORD and SESSION_SECRET
-docker compose up -d     # optional local Postgres on localhost:5433
+docker compose up -d db  # optional: only the database, on localhost:5433
 npx prisma migrate deploy
 npm run dev              # http://localhost:3000
 ```
 
 Use strong values for `ADMIN_PASSWORD` and `SESSION_SECRET` (for example `openssl rand -hex 32`). Sign in at `/login`.
+
+Want to see the app full of data before using it? Use a **separate** database and run `DEMO_MODE=true npm run seed:demo` (see "Demo mode").
 
 ## First steps
 
@@ -65,6 +86,7 @@ Use strong values for `ADMIN_PASSWORD` and `SESSION_SECRET` (for example `openss
 | `ADMIN_PASSWORD` | yes (except demo) | Single login password |
 | `SESSION_SECRET` | yes (except demo) | Secret that signs the session cookie (32+ random characters recommended) |
 | `DEMO_MODE` | no | `true` enables the read-only demo mode (no login) |
+| `COOKIE_SEM_HTTPS` | no | `true` drops the `Secure` flag from the session cookie. Only for plain-HTTP access outside `localhost` (`docker compose` already sets it). Behind HTTPS, leave it out |
 | `GEMINI_API_KEY` | no | Enables "Avaliar com IA" for essays. Free key at [AI Studio](https://aistudio.google.com/app/apikey) |
 | `GEMINI_MODELS` | no | Comma-separated Gemini models, in order of preference |
 | `AVALIACOES_POR_DIA` | no | Daily limit of essay gradings (default 20) |
@@ -86,6 +108,8 @@ Without `ADMIN_PASSWORD` and `SESSION_SECRET` (outside demo mode) the app **refu
 1. Create a second database.
 2. Migrate and seed it: `DATABASE_URL=... DEMO_MODE=true npm run seed:demo`.
 3. Deploy a second Vercel project with `DEMO_MODE=true` and that `DATABASE_URL`. Do not set `ADMIN_PASSWORD` or AI keys on it.
+
+`DEMO_MODE` must also be set **at build time** (the banner and the hidden buttons are fixed into the bundle). On Vercel this happens on its own, because project variables apply to the build. If you build locally, do not leave a stray `DEMO_MODE=true` in `.env.local` when building for your real use.
 
 The demo seed **deletes** exams, review items, plan and calendar rows in the target database, so it requires `DEMO_MODE=true` and `--yes`. Plan and calendar dates are relative to the day the seed runs.
 
