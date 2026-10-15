@@ -53,6 +53,30 @@ d("rotas com banco real", () => {
     expect((await chamar(importar, { method: "GET" })).status).toBe(405);
   });
 
+  it("plano: marcar e desmarcar um dia como feito, e rejeitar corpo inválido ou id inexistente", async () => {
+    const importar = (await import("@/pages/api/plano/importar")).default;
+    const porId = (await import("@/pages/api/plano/[id]")).default;
+    const resumo = (await import("@/pages/api/resumo-semanal")).default;
+    await chamar(importar, { method: "POST", body: { csv: CSV, confirmar: true } });
+    const pendente = await prisma.planoEstudo.findFirstOrThrow({ where: { materia: MATERIA, feito: false } });
+
+    const marcar = await chamar(porId, { method: "PATCH", query: { id: pendente.id }, body: { feito: true } });
+    expect(marcar.status).toBe(200);
+    expect(await prisma.planoEstudo.findUnique({ where: { id: pendente.id } })).toMatchObject({ feito: true });
+
+    const r = await chamar(resumo, { query: { inicio: "2026-10-07", fim: "2026-10-08" } });
+    const m = (r.corpo as { porMateria: { materia: string; diasFeitos: number }[] }).porMateria.find((x) => x.materia === MATERIA);
+    expect(m?.diasFeitos).toBe(2);
+
+    await chamar(porId, { method: "PATCH", query: { id: pendente.id }, body: { feito: false } });
+    expect(await prisma.planoEstudo.findUnique({ where: { id: pendente.id } })).toMatchObject({ feito: false });
+
+    expect((await chamar(porId, { method: "PATCH", query: { id: pendente.id }, body: { feito: "sim" } })).status).toBe(400);
+    expect((await chamar(porId, { method: "PATCH", query: { id: pendente.id } })).status).toBe(400);
+    expect((await chamar(porId, { method: "PATCH", query: { id: "nao-existe" }, body: { feito: true } })).status).toBe(404);
+    expect((await chamar(porId, { method: "GET", query: { id: pendente.id } })).status).toBe(405);
+  });
+
   it("resumo semanal: conta o período e rejeita datas inválidas com 400", async () => {
     const resumo = (await import("@/pages/api/resumo-semanal")).default;
     const ok = await chamar(resumo, { query: { inicio: "2026-10-07", fim: "2026-10-08" } });
