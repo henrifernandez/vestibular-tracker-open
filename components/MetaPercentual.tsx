@@ -36,7 +36,7 @@ export default function MetaPercentual({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <label htmlFor="meta-percentual" className="text-sm">
-          Quero acertar <strong className="font-mono">{valor}%</strong> da prova
+          Quero acertar <strong className="tabular-nums">{valor}%</strong> da prova
         </label>
         <button
           type="button"

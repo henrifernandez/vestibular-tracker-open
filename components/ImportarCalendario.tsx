@@ -157,8 +157,8 @@ export default function ImportarCalendario({ aoImportar, desativado = false }: {
               <tbody>
                 {previa.amostra.slice(0, 10).map((e, i) => (
                   <tr key={i} className="border-t border-ink/10">
-                    <td className="py-1 pr-3 font-mono">{e.dia}</td>
-                    <td className="py-1 pr-3 font-mono">{e.inicio ?? "dia todo"}</td>
+                    <td className="py-1 pr-3 tabular-nums">{e.dia}</td>
+                    <td className="py-1 pr-3 tabular-nums">{e.inicio ?? "dia todo"}</td>
                     <td className="py-1">{e.titulo}{e.tipo === "PROVA" ? " (prova)" : ""}</td>
                   </tr>
                 ))}

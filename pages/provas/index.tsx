@@ -67,7 +67,7 @@ export default function Provas() {
                   {p.metaPercentual != null ? `meta de ${p.metaPercentual}% de acertos` : "sem meta definida"}
                 </div>
               </div>
-              <div className="font-mono text-sm text-ink/70">
+              <div className="tabular-nums text-sm text-ink/70">
                 {p.dataProva ? `${formatarDiaMes(p.dataProva)} · ${rotuloContagem(p.dataProva, hoje)}` : "sem data"}
               </div>
               <Link href={`/provas/${p.slug}`} className="text-sm text-brand underline">

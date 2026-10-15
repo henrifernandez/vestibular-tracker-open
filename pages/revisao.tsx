@@ -109,7 +109,7 @@ function SelectBox({
 function Numero({ n, singular, plural, cor }: { n: number; singular: string; plural: string; cor: string }) {
   return (
     <span className="inline-flex items-baseline gap-1.5 rounded-full border border-ink/10 bg-paper/60 px-3 py-1 text-xs">
-      <span className={"font-mono text-sm font-medium " + (n > 0 ? cor : "text-ink/60")}>{n}</span>
+      <span className={"tabular-nums text-sm font-medium " + (n > 0 ? cor : "text-ink/60")}>{n}</span>
       <span className="text-ink/60">{n === 1 ? singular : plural}</span>
     </span>
   );
@@ -302,18 +302,18 @@ export default function Revisao() {
       {/* Resumo */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Pendentes</div>
-          <div className="font-display text-2xl font-semibold mt-1">{resumo ? resumo.pendentes : "..."}</div>
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Pendentes</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">{resumo ? resumo.pendentes : "..."}</div>
           <div className="text-xs text-ink/60 mt-1">a revisar</div>
         </div>
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Revisados</div>
-          <div className="font-display text-2xl font-semibold mt-1">{resumo ? resumo.revisados : "..."}</div>
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Revisados</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">{resumo ? resumo.revisados : "..."}</div>
           <div className="text-xs text-ink/60 mt-1">no total</div>
         </div>
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">% revisado</div>
-          <div className="font-display text-2xl font-semibold mt-1">
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">% revisado</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">
             {resumo ? `${resumo.pctRevisado ?? 0}%` : "..."}
           </div>
           <div className="text-xs text-ink/60 mt-1">
@@ -321,8 +321,8 @@ export default function Revisao() {
           </div>
         </div>
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Revisados (7d)</div>
-          <div className="font-display text-2xl font-semibold mt-1">
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Revisados (7d)</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">
             {resumo ? resumo.revisadosUltimos7Dias : "..."}
           </div>
           <div className="text-xs text-ink/60 mt-1">últimos 7 dias</div>
@@ -399,7 +399,7 @@ export default function Revisao() {
             </svg>
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-[17px] font-semibold leading-tight">Importação concluída</p>
+            <p className="text-[17px] font-semibold leading-tight">Importação concluída</p>
             <p className="text-xs text-ink/60 mt-1">
               {resultadoSync.criados + resultadoSync.atualizados + resultadoSync.reabertos + resultadoSync.removidos === 0
                 ? "Tudo já estava sincronizado com os seus simulados."
@@ -445,7 +445,7 @@ export default function Revisao() {
                 >
                   {op.rotulo}
                   {contagem != null && (
-                    <span className={"font-mono text-[11px] " + (ativo ? "text-white/75" : "text-ink/60")}>{contagem}</span>
+                    <span className={"tabular-nums text-[11px] " + (ativo ? "text-white/75" : "text-ink/60")}>{contagem}</span>
                   )}
                 </button>
               );
@@ -499,7 +499,7 @@ export default function Revisao() {
         </div>
 
         {itens && (
-          <span className="font-mono text-xs text-ink/60">
+          <span className="tabular-nums text-xs text-ink/60">
             {itens.length} {itens.length === 1 ? "conteúdo" : "conteúdos"}
           </span>
         )}
@@ -584,12 +584,12 @@ export default function Revisao() {
                   <span className={"font-medium text-sm " + (revisado ? "line-through decoration-ink/30" : "")}>
                     {c.assunto}
                   </span>
-                  <span className="font-mono text-[10px] uppercase tracking-wide bg-accent/10 text-brand rounded-full px-2 py-0.5">
+                  <span className="font-medium text-[10px] uppercase tracking-wide bg-accent/10 text-brand rounded-full px-2 py-0.5">
                     {c.disciplina}
                   </span>
                   <span
                     className={
-                      "font-mono text-[10px] uppercase tracking-wide border rounded-full px-2 py-0.5 " +
+                      "font-medium text-[10px] uppercase tracking-wide border rounded-full px-2 py-0.5 " +
                       PRIORIDADE_COR[c.prioridade]
                     }
                   >
@@ -679,8 +679,8 @@ export default function Revisao() {
             className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
           >
             <span>
-              <span className="font-display text-[15px] font-semibold">Errados uma vez só</span>
-              <span className="ml-2 font-mono text-xs text-ink/60">{candidatos.length}</span>
+              <span className="text-[15px] font-semibold">Errados uma vez só</span>
+              <span className="ml-2 tabular-nums text-xs text-ink/60">{candidatos.length}</span>
               <span className="mt-0.5 block text-xs text-ink/60">
                 Não entram sozinhos. Inclua na revisão os que você quiser.
               </span>
@@ -705,7 +705,7 @@ export default function Revisao() {
                 <li key={c.assunto} className="flex items-center justify-between gap-3 px-4 py-2.5">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <span className="text-sm">{c.assunto}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-wide bg-accent/10 text-brand rounded-full px-2 py-0.5">
+                    <span className="font-medium text-[10px] uppercase tracking-wide bg-accent/10 text-brand rounded-full px-2 py-0.5">
                       {c.disciplina}
                     </span>
                   </div>

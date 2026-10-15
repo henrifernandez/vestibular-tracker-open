@@ -182,7 +182,7 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
                 <tbody>
                   {previa.amostra.slice(0, 10).map((l, i) => (
                     <tr key={i} className="border-t border-ink/10">
-                      <td className="py-1 pr-3 font-mono">{l.data}</td>
+                      <td className="py-1 pr-3 tabular-nums">{l.data}</td>
                       <td className="py-1 pr-3">{l.materia}</td>
                       <td className="py-1 pr-3">{l.feito ? "sim" : "não"}</td>
                       <td className="py-1">{l.topicos ?? ""}</td>
