@@ -128,18 +128,68 @@ function resumoSimulado(s: SimuladoRow): { texto: string; pct: number | null } {
   return { texto: `${s.resultados.length} áreas — média ${pct ?? "?"}%`, pct };
 }
 
-function PrimeirosPassos() {
+// Guia de três passos para quem acabou de instalar. Cada etapa se marca sozinha quando o dado existe,
+// e o guia some quando há prova e simulado cadastrados.
+function PrimeirosPassos({ provas, totalSimulados }: { provas: ProvaDash[]; totalSimulados: number }) {
+  const passos = [
+    {
+      titulo: "Escolha a sua prova",
+      texto: "ENEM, Fuvest, Unicamp ou outra: use um modelo pronto ou defina as áreas você mesmo.",
+      feito: provas.length > 0,
+      href: "/provas",
+      acao: "Adicionar prova",
+    },
+    {
+      titulo: "Defina a data e a meta",
+      texto: "Diga quando é a prova e quanto quer acertar. O painel mostra a contagem regressiva e o que falta.",
+      feito: provas.some((p) => p.dataProva && p.metaPercentual != null),
+      href: "/provas",
+      acao: "Definir data e meta",
+    },
+    {
+      titulo: "Registre o primeiro simulado",
+      texto: "Lance os acertos por área, ou importe um CSV. O painel passa a comparar o resultado com a sua meta.",
+      feito: totalSimulados > 0,
+      href: "/simulados",
+      acao: "Registrar simulado",
+    },
+  ];
+  const atual = passos.findIndex((p) => !p.feito);
+  const feitos = passos.filter((p) => p.feito).length;
+
   return (
-    <div className="bg-surface rounded-xl border border-ink/10 p-6 space-y-3">
-      <h2 className="font-display text-lg font-semibold">Comece escolhendo a sua prova</h2>
-      <p className="text-sm text-ink/70">
-        Cadastre o vestibular ou a prova que você vai fazer (ENEM, Fuvest, Unicamp ou outra), diga a data e quanto quer acertar.
-        O painel passa a mostrar a contagem regressiva e o quanto falta para a meta.
-      </p>
-      <Link href="/provas" className="inline-block bg-accent text-white rounded-md px-4 py-2 text-sm font-medium">
-        Adicionar minha prova
-      </Link>
-    </div>
+    <section aria-label="Primeiros passos" className="bg-surface rounded-xl border border-ink/10 p-6 space-y-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-lg font-semibold">Comece por aqui</h2>
+        <span className="font-mono text-xs text-ink/60">{feitos} de {passos.length} passos</span>
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-3">
+        {passos.map((p, i) => (
+          <li
+            key={p.titulo}
+            aria-current={i === atual ? "step" : undefined}
+            className={
+              "flex flex-col gap-2 rounded-lg border p-4 " +
+              (i === atual ? "border-accent/50 bg-accent/10" : "border-ink/10 bg-paper/40")
+            }
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-medium text-brand">
+                {p.feito ? "✓" : i + 1}
+              </span>
+              <h3 className="text-sm font-medium">{p.titulo}</h3>
+              {p.feito && <span className="ml-auto text-xs text-brand">Feito</span>}
+            </div>
+            <p className="text-sm text-ink/70">{p.texto}</p>
+            {i === atual && (
+              <Link href={p.href} className="mt-auto inline-block self-start bg-accent text-white rounded-md px-4 py-2 text-sm font-medium">
+                {p.acao}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -206,7 +256,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {provas.length === 0 && <PrimeirosPassos />}
+      {(provas.length === 0 || simulados.length === 0) && <PrimeirosPassos provas={provas} totalSimulados={simulados.length} />}
 
       {/* Contagem regressiva */}
       {proximas.length > 0 && (
