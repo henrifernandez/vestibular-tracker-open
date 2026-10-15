@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MODELO_CSV_PLANO, PROMPT_CONVERSAO_CSV, modeloCsvPlano } from "@/lib/plano-modelo";
+import ImportacaoDemo from "./ImportacaoDemo";
 
 type Previa = {
   totalLinhas: number;
@@ -8,7 +9,7 @@ type Previa = {
   amostra: { data: string; materia: string; feito: boolean; topicos?: string | null }[];
 };
 
-// `desativado` mostra o bloco sem permitir envio (demonstração): o formato fica visível e o modelo pode ser baixado.
+// `desativado` troca o formulário pela versão somente leitura (demonstração): explica o fluxo, mostra o formato e deixa baixar o modelo.
 export default function ImportarPlano({ aoImportar, desativado = false }: { aoImportar: () => void; desativado?: boolean }) {
   const [modelo, setModelo] = useState(MODELO_CSV_PLANO);
   useEffect(() => setModelo(modeloCsvPlano()), []);
@@ -55,7 +56,7 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
   }
 
   function baixarModelo() {
-    const url = URL.createObjectURL(new Blob([modelo],{ type: "text/csv;charset=utf-8" }));
+    const url = URL.createObjectURL(new Blob([modelo], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
     a.download = "modelo-plano-de-estudo.csv";
@@ -74,6 +75,36 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
 
   const botao = "text-xs px-3 py-1.5 rounded-full border border-ink/15 text-ink/70 transition hover:border-accent/50 hover:text-brand";
 
+  if (desativado) {
+    return (
+      <ImportacaoDemo
+        titulo="Importar plano de estudo (CSV)"
+        descricao="Leve o seu cronograma para o app de uma vez. O resumo semanal compara o que estava planejado com as aulas concluídas e os simulados do período."
+        passos={[
+          "Baixe o modelo e preencha as colunas data, materia, feito, topicos e observacoes.",
+          "Escolha o arquivo ou cole o CSV. Há um prompt pronto para converter uma tabela de outra ferramenta com uma IA.",
+          "Confira a prévia e confirme. Importar o mesmo arquivo de novo atualiza as linhas, sem duplicar.",
+        ]}
+        csv={modelo}
+      >
+        <button type="button" onClick={baixarModelo} className={botao}>
+          Baixar modelo
+        </button>
+        <button type="button" onClick={copiarPrompt} className={botao}>
+          Copiar prompt para converter com IA
+        </button>
+        <button type="button" disabled className={botao + " cursor-not-allowed opacity-40"}>
+          Escolher arquivo
+        </button>
+        {mensagem && (
+          <span role="status" className="text-xs text-ink/70">
+            {mensagem}
+          </span>
+        )}
+      </ImportacaoDemo>
+    );
+  }
+
   return (
     <section className="bg-surface rounded-xl border border-ink/10 p-4 space-y-3">
       <h2 className="text-xs uppercase tracking-wide text-ink/60">Importar plano de estudo (CSV)</h2>
@@ -88,9 +119,9 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
         <button type="button" onClick={copiarPrompt} className={botao}>
           Copiar prompt para converter com IA
         </button>
-        <label className={botao + (desativado ? " opacity-40 pointer-events-none" : " cursor-pointer")}>
+        <label className={botao + " cursor-pointer"}>
           Escolher arquivo
-          <input type="file" accept=".csv,text/csv" disabled={desativado} className="sr-only" onChange={(e) => lerArquivo(e.target.files?.[0])} />
+          <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => lerArquivo(e.target.files?.[0])} />
         </label>
       </div>
       <label htmlFor="csv-plano" className="sr-only">
@@ -98,8 +129,7 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
       </label>
       <textarea
         id="csv-plano"
-        value={desativado ? modelo : csv}
-        readOnly={desativado}
+        value={csv}
         onChange={(e) => {
           setCsv(e.target.value);
           setPrevia(null);
@@ -110,19 +140,12 @@ export default function ImportarPlano({ aoImportar, desativado = false }: { aoIm
       />
       <button
         type="button"
-        disabled={desativado || !csv.trim() || ocupado}
+        disabled={!csv.trim() || ocupado}
         onClick={() => enviar(false)}
         className="text-sm px-4 py-1.5 rounded-full bg-accent text-white transition hover:opacity-90 disabled:opacity-40"
       >
         Ver prévia
       </button>
-
-      {desativado && (
-        <p className="text-xs text-ink/60">
-          Na demonstração a importação fica desativada. O texto acima é o formato do CSV, que você pode baixar. No seu app, a
-          prévia aparece antes de confirmar.
-        </p>
-      )}
 
       {mensagem && (
         <p role="status" className="text-sm text-ink/70">
