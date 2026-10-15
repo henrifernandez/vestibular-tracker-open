@@ -79,12 +79,13 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # No nível do job: o compose exige estas variáveis para ler o arquivo, inclusive em "logs" e "down".
+    env:
+      ADMIN_PASSWORD: senha-de-teste-do-ci
+      SESSION_SECRET: segredo-de-teste-do-ci-com-32-caracteres
     steps:
       - uses: actions/checkout@v4
       - name: Subir o app e o banco com o compose
-        env:
-          ADMIN_PASSWORD: senha-de-teste-do-ci
-          SESSION_SECRET: segredo-de-teste-do-ci-com-32-caracteres
         run: docker compose up --build --wait --wait-timeout 300
       - name: Conferir login, bloqueio sem sessão e acesso com sessão
         run: |
