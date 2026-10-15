@@ -107,7 +107,7 @@ export default function Calendario() {
   return (
     <div className="space-y-6">
       <Head>
-        <title>Calendário | Monitor de Acertos</title>
+        <title>Calendário | Vestibular Tracker</title>
       </Head>
       <div>
         <h1 className="font-display text-2xl font-semibold">Calendário de estudos</h1>

@@ -1,4 +1,4 @@
-// Schema do banco de dados do Monitor de Acertos (vestibular-tracker)
+// Schema do banco de dados do Vestibular Tracker (vestibular-tracker)
 // Provider: PostgreSQL (recomendado: Neon ou Supabase, camada gratuita)
 
 generator client {

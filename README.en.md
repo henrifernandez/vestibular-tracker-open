@@ -1,4 +1,4 @@
-# Monitor de Acertos (Score Tracker)
+# Vestibular Tracker
 
 Track mock exams, error-driven review, a study plan and a calendar during the final stretch before Brazilian university entrance exams (ENEM, Fuvest, Unicamp and others). The interface is in Brazilian Portuguese.
 

@@ -30,7 +30,7 @@ const NAV = [
   { href: "/calendario", label: "Calendário" },
 ];
 
-const NOME_APP = "Monitor de Acertos";
+const NOME_APP = "Vestibular Tracker";
 const DESCRICAO = "Acompanhe simulados, revisão, plano de estudo e calendário para vestibulares e ENEM.";
 const TITULOS: Record<string, string> = {
   "/": "Painel",
@@ -75,7 +75,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <header className="border-b border-ink/10 bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between flex-wrap gap-3">
           <Link href="/" className="font-display font-semibold text-xl tracking-tight text-ink">
-            Monitor de Acertos
+            Vestibular Tracker
           </Link>
           {!naTelaDeLogin && (
           <nav className="flex gap-1 text-sm flex-wrap">
