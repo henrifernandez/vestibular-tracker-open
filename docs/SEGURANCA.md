@@ -38,7 +38,7 @@ Resumo do modelo de segurança, do que foi revisado e das limitações conhecida
 - **CSP com `unsafe-inline`:** o Pages Router injeta scripts e estilos inline. Migrar para nonces exigiria o App Router.
 - **Sessões não são revogáveis individualmente.** Para invalidar todas, troque o `SESSION_SECRET`.
 - O texto da redação é enviado ao Google Gemini quando você usa "Avaliar com IA". Não use com conteúdo que você não queira enviar a um terceiro.
-- O cookie de sessão é `Secure` em produção: em produção o login só funciona por HTTPS (ou em `localhost`). Quem hospeda em rede local sem HTTPS precisa de um proxy com TLS.
+- O cookie de sessão é `Secure` em produção: em produção o login só funciona por HTTPS (ou em `localhost`). Quem hospeda em rede local sem HTTPS deve colocar um proxy com TLS na frente. A variável `COOKIE_SEM_HTTPS=true` tira a marca `Secure` para esse caso (e o `docker compose` a liga por padrão, porque só escuta em `localhost`), mas ela deixa o cookie trafegar sem criptografia: não a use em um servidor acessível pela internet.
 - **Dependências:** `npm audit --omit=dev` está limpo (Next atualizado para 16.4.0, que corrige avisos críticos da 16.3.x). O `npm audit` completo ainda lista avisos em dependências de **desenvolvimento** (ferramentas de build e teste, por exemplo `braces`), que não vão para o servidor em produção. Dependabot acompanha as atualizações.
 - **Modo demonstração sobre um banco real expõe tudo para leitura.** O app não consegue saber se o banco é de demonstração: use sempre um banco separado e descartável.
 - `DEMO_MODE` é lida em tempo de execução pelo proxy e fixada no build para o navegador (`NEXT_PUBLIC_DEMO_MODE`). Mantenha as duas iguais no mesmo projeto.

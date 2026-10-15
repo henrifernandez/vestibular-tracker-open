@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   DURACAO_SESSAO_SEGUNDOS,
+  cookieDeSessao,
+  cookieSeguro,
   criarSessao,
   loginBloqueado,
   registrarFalhaDeLogin,
@@ -56,6 +58,23 @@ describe("sessão", () => {
     const token = criarSessao();
     delete process.env.SESSION_SECRET;
     expect(validarSessao(token)).toBe(false);
+  });
+});
+
+describe("marca Secure do cookie", () => {
+  const env = (e: Record<string, string>) => e as unknown as NodeJS.ProcessEnv;
+  it("é Secure em produção por padrão", () => expect(cookieSeguro(env({ NODE_ENV: "production" }))).toBe(true));
+  it("não é Secure fora de produção", () => expect(cookieSeguro(env({ NODE_ENV: "development" }))).toBe(false));
+  it("COOKIE_SEM_HTTPS=true desliga em produção, e só esse valor exato", () => {
+    expect(cookieSeguro(env({ NODE_ENV: "production", COOKIE_SEM_HTTPS: "true" }))).toBe(false);
+    expect(cookieSeguro(env({ NODE_ENV: "production", COOKIE_SEM_HTTPS: "1" }))).toBe(true);
+    expect(cookieSeguro(env({ NODE_ENV: "production", COOKIE_SEM_HTTPS: "false" }))).toBe(true);
+  });
+  it("o cookie mantém httpOnly e SameSite mesmo sem Secure", () => {
+    const c = cookieDeSessao("x", false);
+    expect(c).toContain("HttpOnly");
+    expect(c).toContain("SameSite=Lax");
+    expect(c).not.toContain("Secure");
   });
 });
 

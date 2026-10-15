@@ -1,4 +1,9 @@
-# Postgres local para desenvolvimento e testes: docker compose up -d
+# App completo com banco, em um comando:
+#   cp .env.example .env     (preencha ADMIN_PASSWORD e SESSION_SECRET)
+#   docker compose up --build
+# Abra http://localhost:3000 e entre com a senha de administrador.
+#
+# Só o banco, para desenvolver com "npm run dev": docker compose up -d db
 services:
   db:
     image: postgres:16
@@ -7,8 +12,45 @@ services:
       POSTGRES_PASSWORD: tracker
       POSTGRES_DB: tracker
     ports:
-      - "5433:5432"
+      # Só a sua máquina enxerga o banco. A senha é de desenvolvimento, não exponha esta porta.
+      - "127.0.0.1:5433:5432"
     volumes:
       - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracker -d tracker"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Só a sua máquina acessa. Para outra máquina da rede, troque por "3000:3000" (e leia a nota do cookie abaixo).
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: postgresql://tracker:tracker@db:5432/tracker
+      # Sem estas duas o compose não sobe: o app nunca fica aberto por esquecimento.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD no arquivo .env}
+      SESSION_SECRET: ${SESSION_SECRET:?Defina SESSION_SECRET no arquivo .env, por exemplo com o resultado de openssl rand -hex 32}
+      # O cookie de sessão leva "Secure" em produção, e o navegador o descarta em HTTP fora do localhost
+      # (o Safari descarta até no localhost). Como aqui o acesso é por http://localhost, o padrão é
+      # desligar a marca. Atrás de um proxy com HTTPS, defina COOKIE_SEM_HTTPS=false no .env.
+      COOKIE_SEM_HTTPS: ${COOKIE_SEM_HTTPS:-true}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODELS: ${GEMINI_MODELS:-}
+      AVALIACOES_POR_DIA: ${AVALIACOES_POR_DIA:-}
+      NOTION_TOKEN: ${NOTION_TOKEN:-}
+      NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 6
+    restart: unless-stopped
+
 volumes:
   dbdata:

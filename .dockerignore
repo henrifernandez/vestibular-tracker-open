@@ -1,0 +1,16 @@
+# Nada disto deve entrar na imagem.
+.git
+.github
+.next
+node_modules
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+/capturas
+/playwright-report
+/test-results
+docs/capturas
+tests
+.claude

@@ -44,6 +44,13 @@ export function validarSessao(token: string | undefined | null, agora: number = 
   return Number(exp) * 1000 > agora;
 }
 
+// Em produção o cookie leva `Secure`. Quem roda o app por HTTP puro (por exemplo, o docker compose
+// numa rede local, sem HTTPS na frente) precisa de COOKIE_SEM_HTTPS=true: sem isso o navegador
+// descarta o cookie e o login volta para a tela de entrada. Atrás de HTTPS, deixe a variável de fora.
+export function cookieSeguro(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.NODE_ENV === "production" && env.COOKIE_SEM_HTTPS !== "true";
+}
+
 export function cookieDeSessao(token: string, producao: boolean): string {
   const partes = [
     `${NOME_COOKIE}=${token}`,

@@ -7,7 +7,7 @@ Obrigado pelo interesse! Este é um projeto pessoal aberto, então o fluxo é si
 ```bash
 npm install
 cp .env.example .env
-docker compose up -d
+docker compose up -d db
 npx prisma migrate deploy
 npm run dev
 ```

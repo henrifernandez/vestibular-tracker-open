@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import {
   authConfigurada,
   cookieDeSessao,
+  cookieSeguro,
   criarSessao,
   limparTentativas,
   loginBloqueado,
@@ -35,6 +36,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   limparTentativas(ip);
-  res.setHeader("Set-Cookie", cookieDeSessao(criarSessao(), process.env.NODE_ENV === "production"));
+  res.setHeader("Set-Cookie", cookieDeSessao(criarSessao(), cookieSeguro()));
   return res.status(200).json({ ok: true });
 }
