@@ -46,7 +46,8 @@ export function validarSessao(token: string | undefined | null, agora: number = 
 
 // Em produção o cookie leva `Secure`. Quem roda o app por HTTP puro (por exemplo, o docker compose
 // numa rede local, sem HTTPS na frente) precisa de COOKIE_SEM_HTTPS=true: sem isso o navegador
-// descarta o cookie e o login volta para a tela de entrada. Atrás de HTTPS, deixe a variável de fora.
+// descarta o cookie e o login volta para a tela de entrada. Atrás de HTTPS, deixe a variável de fora
+// (no docker compose o padrão é "true", então lá defina COOKIE_SEM_HTTPS=false).
 export function cookieSeguro(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.NODE_ENV === "production" && env.COOKIE_SEM_HTTPS !== "true";
 }
@@ -81,10 +82,28 @@ export function loginBloqueado(ip: string, agora: number = Date.now()): boolean 
   return t.n >= MAX_TENTATIVAS;
 }
 
+// IP usado como chave do limite de tentativas. Os cabeçalhos de IP só valem quando há um proxy
+// conhecido na frente (Vercel, ou TRUST_PROXY=true para o seu próprio proxy). Fora disso o cliente
+// consegue forjá-los e o limite deixaria de valer; então usamos o endereço da conexão.
+export function ipDoCliente(
+  cabecalhos: Record<string, string | string[] | undefined>,
+  remoto: string | undefined,
+  env: NodeJS.ProcessEnv = process.env
+): string {
+  const confiaNoProxy = Boolean(env.VERCEL) || env.TRUST_PROXY === "true";
+  const bruto = confiaNoProxy ? (cabecalhos["x-vercel-forwarded-for"] ?? cabecalhos["x-real-ip"] ?? remoto) : remoto;
+  return String(bruto ?? "").split(",")[0].trim() || "desconhecido";
+}
+
 export function registrarFalhaDeLogin(ip: string, agora: number = Date.now()): void {
   if (tentativas.size > 1000) {
     for (const [k, v] of tentativas) if (agora - v.inicio > JANELA_MS) tentativas.delete(k);
-    if (tentativas.size > 1000) tentativas.clear();
+    // Ainda cheio: descarta só as entradas mais antigas (o Map guarda a ordem de inserção).
+    // Zerar tudo deixaria quem está sendo bloqueado tentar de novo.
+    for (const k of tentativas.keys()) {
+      if (tentativas.size <= 900) break;
+      tentativas.delete(k);
+    }
   }
   const t = tentativas.get(ip);
   if (!t || agora - t.inicio > JANELA_MS) tentativas.set(ip, { n: 1, inicio: agora });

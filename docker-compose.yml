@@ -17,7 +17,9 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracker -d tracker"]
+      # -h 127.0.0.1 testa pela rede: na primeira subida o servidor temporário da inicialização já
+      # responde pelo socket, e o app tentaria migrar antes do banco de verdade estar de pé.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U tracker -d tracker"]
       interval: 3s
       timeout: 3s
       retries: 20

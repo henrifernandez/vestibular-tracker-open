@@ -49,7 +49,7 @@ docker compose up --build
 
 Open http://localhost:3000 and sign in with the admin password. Tables are created on startup, and data lives in a Docker volume: `docker compose down` keeps it, `docker compose down -v` deletes it.
 
-The compose file only listens on `localhost` and refuses to start without `ADMIN_PASSWORD` and `SESSION_SECRET`. Because access is over plain HTTP, it sets `COOKIE_SEM_HTTPS=true` (otherwise the browser drops the session cookie). If you put the app behind HTTPS, set `COOKIE_SEM_HTTPS=false` in `.env`.
+If the password contains a `$`, wrap the value in single quotes in `.env`. The compose file only listens on `localhost` and refuses to start without `ADMIN_PASSWORD` and `SESSION_SECRET`. Because access is over plain HTTP, it sets `COOKIE_SEM_HTTPS=true` (otherwise the browser drops the session cookie). If you put the app behind HTTPS, set `COOKIE_SEM_HTTPS=false` in `.env`.
 
 ### Without Docker (Node.js)
 
@@ -86,7 +86,8 @@ Want to see the app full of data before using it? Use a **separate** database an
 | `ADMIN_PASSWORD` | yes (except demo) | Single login password |
 | `SESSION_SECRET` | yes (except demo) | Secret that signs the session cookie (32+ random characters recommended) |
 | `DEMO_MODE` | no | `true` enables the read-only demo mode (no login) |
-| `COOKIE_SEM_HTTPS` | no | `true` drops the `Secure` flag from the session cookie. Only for plain-HTTP access outside `localhost` (`docker compose` already sets it). Behind HTTPS, leave it out |
+| `COOKIE_SEM_HTTPS` | no | `true` drops the `Secure` flag from the session cookie. Only for plain-HTTP access outside `localhost` (`docker compose` already sets it to `true`). Behind HTTPS, leave it out, or set `false` in the compose setup |
+| `TRUST_PROXY` | no | `true` makes the login attempt limiter trust the `x-real-ip` header. Only when the app sits behind your own proxy. Without a proxy, leave it out (a client could forge the IP). Automatic on Vercel |
 | `GEMINI_API_KEY` | no | Enables "Avaliar com IA" for essays. Free key at [AI Studio](https://aistudio.google.com/app/apikey) |
 | `GEMINI_MODELS` | no | Comma-separated Gemini models, in order of preference |
 | `AVALIACOES_POR_DIA` | no | Daily limit of essay gradings (default 20) |

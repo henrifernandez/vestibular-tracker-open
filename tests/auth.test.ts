@@ -4,11 +4,16 @@ import {
   cookieDeSessao,
   cookieSeguro,
   criarSessao,
+  ipDoCliente,
+  limparTentativas,
   loginBloqueado,
   registrarFalhaDeLogin,
   validarSessao,
   verificarSenha,
 } from "@/lib/auth";
+import loginHandler from "@/pages/api/login";
+import logoutHandler from "@/pages/api/logout";
+import { chamar } from "./helpers/http";
 
 const ENV = { ...process.env };
 
@@ -78,7 +83,59 @@ describe("marca Secure do cookie", () => {
   });
 });
 
+describe("cookie nos handlers de login e logout", () => {
+  const emProducao = (extra: Record<string, string> = {}) => {
+    process.env = { ...process.env, NODE_ENV: "production", ...extra } as NodeJS.ProcessEnv;
+  };
+  const cookieDe = (r: { cabecalhos: Record<string, string | string[]> }) => String(r.cabecalhos["set-cookie"]);
+
+  it("em produção, o login marca Secure por padrão", async () => {
+    emProducao();
+    delete process.env.COOKIE_SEM_HTTPS;
+    const r = await chamar(loginHandler, { method: "POST", body: { senha: "senha-correta" } });
+    expect(r.status).toBe(200);
+    expect(cookieDe(r)).toContain("Secure");
+  });
+  it("com COOKIE_SEM_HTTPS=true, login e logout saem sem Secure", async () => {
+    emProducao({ COOKIE_SEM_HTTPS: "true" });
+    const entrada = await chamar(loginHandler, { method: "POST", body: { senha: "senha-correta" } });
+    const saida = await chamar(logoutHandler, { method: "POST" });
+    expect(cookieDe(entrada)).not.toContain("Secure");
+    expect(cookieDe(saida)).not.toContain("Secure");
+    expect(cookieDe(entrada)).toContain("HttpOnly");
+  });
+  it("sem NODE_ENV definido, o cookie não leva Secure", () => {
+    expect(cookieSeguro({} as NodeJS.ProcessEnv)).toBe(false);
+  });
+});
+
+describe("IP usado no limite de login", () => {
+  const env = (e: Record<string, string>) => e as unknown as NodeJS.ProcessEnv;
+  const cabecalhos = { "x-real-ip": "9.9.9.9", "x-vercel-forwarded-for": "8.8.8.8, 1.1.1.1" };
+  it("fora de proxy conhecido ignora os cabeçalhos, que o cliente pode forjar", () => {
+    expect(ipDoCliente(cabecalhos, "10.0.0.5", env({}))).toBe("10.0.0.5");
+  });
+  it("na Vercel usa o cabeçalho da hospedagem", () => {
+    expect(ipDoCliente(cabecalhos, "10.0.0.5", env({ VERCEL: "1" }))).toBe("8.8.8.8");
+  });
+  it("com TRUST_PROXY=true usa o x-real-ip do seu proxy", () => {
+    expect(ipDoCliente({ "x-real-ip": "9.9.9.9" }, "10.0.0.5", env({ TRUST_PROXY: "true" }))).toBe("9.9.9.9");
+  });
+  it("sem nenhuma informação devolve um valor fixo", () => {
+    expect(ipDoCliente({}, undefined, env({}))).toBe("desconhecido");
+  });
+});
+
 describe("limite de tentativas de login", () => {
+  it("lotar a tabela descarta as entradas mais antigas e não libera quem já está bloqueado", () => {
+    const agora = 1_000_000;
+    for (let i = 0; i < 1100; i++) registrarFalhaDeLogin(`antigo-${i}`, agora);
+    for (let i = 0; i < 5; i++) registrarFalhaDeLogin("alvo", agora);
+    expect(loginBloqueado("alvo", agora)).toBe(true);
+    for (let i = 0; i < 300; i++) registrarFalhaDeLogin(`novo-${i}`, agora);
+    expect(loginBloqueado("alvo", agora)).toBe(true);
+    limparTentativas("alvo");
+  });
   it("bloqueia após 5 falhas e libera depois da janela", () => {
     const ip = "1.2.3.4";
     const t0 = 1_000_000;

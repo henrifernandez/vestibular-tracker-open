@@ -2,10 +2,12 @@
 .git
 .github
 .next
+.vercel
 node_modules
-.env
-.env.*
-!.env.example
+# Arquivos de ambiente em qualquer pasta (por exemplo prisma/.env), exceto o exemplo.
+**/.env
+**/.env.*
+!**/.env.example
 *.log
 *.tsbuildinfo
 /capturas

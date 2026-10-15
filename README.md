@@ -53,7 +53,7 @@ docker compose up --build
 
 Abra http://localhost:3000 e entre com a senha de administrador. As tabelas são criadas na partida, e os dados ficam num volume do Docker: `docker compose down` mantém, `docker compose down -v` apaga.
 
-O compose só escuta em `localhost` e se recusa a subir sem `ADMIN_PASSWORD` e `SESSION_SECRET`. Como o acesso é por HTTP, ele define `COOKIE_SEM_HTTPS=true` (sem isso o navegador descarta o cookie de sessão). Se você puser o app atrás de HTTPS, defina `COOKIE_SEM_HTTPS=false` no `.env`.
+Se a senha tiver o caractere `$`, coloque o valor entre aspas simples no `.env`. O compose só escuta em `localhost` e se recusa a subir sem `ADMIN_PASSWORD` e `SESSION_SECRET`. Como o acesso é por HTTP, ele define `COOKIE_SEM_HTTPS=true` (sem isso o navegador descarta o cookie de sessão). Se você puser o app atrás de HTTPS, defina `COOKIE_SEM_HTTPS=false` no `.env`.
 
 ### Sem Docker (Node.js)
 
@@ -101,7 +101,8 @@ Quer ver o app cheio de dados antes de usar? Use um banco **separado** e rode `D
 | `ADMIN_PASSWORD` | sim (exceto na demo) | Senha única de login |
 | `SESSION_SECRET` | sim (exceto na demo) | Segredo que assina o cookie de sessão (mínimo recomendado: 32 caracteres aleatórios) |
 | `DEMO_MODE` | não | `true` liga o modo demonstração (somente leitura, sem login) |
-| `COOKIE_SEM_HTTPS` | não | `true` tira a marca `Secure` do cookie de sessão. Só para acesso por HTTP fora do `localhost` (o `docker compose` já define). Atrás de HTTPS, deixe de fora |
+| `COOKIE_SEM_HTTPS` | não | `true` tira a marca `Secure` do cookie de sessão. Só para acesso por HTTP fora do `localhost` (o `docker compose` já define como `true`). Atrás de HTTPS, deixe de fora, ou defina `false` no compose |
+| `TRUST_PROXY` | não | `true` faz o limite de tentativas de login confiar no cabeçalho `x-real-ip`. Só se o app estiver atrás do seu próprio proxy. Sem proxy, deixe de fora (o cliente poderia forjar o IP). Na Vercel já é automático |
 | `GEMINI_API_KEY` | não | Habilita "Avaliar com IA" na redação. Chave gratuita em [AI Studio](https://aistudio.google.com/app/apikey) |
 | `GEMINI_MODELS` | não | Lista de modelos Gemini, separados por vírgula, em ordem de preferência |
 | `AVALIACOES_POR_DIA` | não | Limite diário de avaliações de redação (padrão: 20) |

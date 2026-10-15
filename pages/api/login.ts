@@ -4,6 +4,7 @@ import {
   cookieDeSessao,
   cookieSeguro,
   criarSessao,
+  ipDoCliente,
   limparTentativas,
   loginBloqueado,
   registrarFalhaDeLogin,
@@ -20,12 +21,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(500).json({ error: "configuração ausente" });
   }
 
-  // Só cabeçalhos que a hospedagem define (o x-forwarded-for pode ser forjado pelo cliente fora dela).
-  const ip = String(
-    req.headers["x-vercel-forwarded-for"] ?? req.headers["x-real-ip"] ?? req.socket.remoteAddress ?? "desconhecido"
-  )
-    .split(",")[0]
-    .trim();
+  const ip = ipDoCliente(req.headers, req.socket.remoteAddress);
   if (loginBloqueado(ip)) {
     return res.status(429).json({ error: "Muitas tentativas. Aguarde um minuto." });
   }

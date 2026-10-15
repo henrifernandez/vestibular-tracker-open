@@ -6,7 +6,7 @@ Resumo do modelo de segurança, do que foi revisado e das limitações conhecida
 
 - **Uma senha de administrador** (`ADMIN_PASSWORD`). Não há contas de usuário.
 - Sessão em cookie `sessao`: `httpOnly`, `SameSite=Lax`, `Secure` em produção, validade de 30 dias. O valor é `<expiração>.<HMAC-SHA256>`, assinado com `SESSION_SECRET`.
-- A senha é comparada em tempo constante. Há limite de 5 tentativas de login por minuto por IP.
+- A senha é comparada em tempo constante. Há limite de 5 tentativas de login por minuto por IP. O IP vem do cabeçalho da hospedagem só na Vercel ou com `TRUST_PROXY=true` (app atrás do seu próprio proxy); fora disso vale o endereço da conexão, porque o cliente poderia forjar o cabeçalho. Em Docker com a porta publicada, a conexão chega pelo gateway da rede do Docker, então todos compartilham o mesmo contador: isso segura força bruta, mas 5 erros de qualquer pessoa bloqueiam o login por um minuto. O contador fica na memória e zera ao reiniciar.
 - `proxy.ts` (o antigo middleware do Next) protege **todas** as páginas e rotas de API. Só `/login` e `/api/login` são públicas.
 - **Fail closed:** sem `ADMIN_PASSWORD` ou `SESSION_SECRET` (fora do modo demonstração) o app responde 500 a tudo, em vez de ficar aberto.
 - Escritas (POST, PATCH, DELETE) exigem que o cabeçalho `Origin`, quando presente, seja o próprio host.
