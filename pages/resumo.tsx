@@ -93,17 +93,17 @@ export default function ResumoSemanal() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="bg-surface rounded-xl border border-ink/10 p-4">
               <p className="text-xs uppercase tracking-wide text-ink/60 mb-1">Dias no cronograma</p>
-              <p className="font-display text-3xl font-semibold">{totais.total}</p>
+              <p className="text-3xl font-semibold tabular-nums">{totais.total}</p>
             </div>
             <div className="bg-surface rounded-xl border border-ink/10 p-4">
               <p className="text-xs uppercase tracking-wide text-ink/60 mb-1">Já estudados</p>
-              <p className="font-display text-3xl font-semibold">
+              <p className="text-3xl font-semibold tabular-nums">
                 {totais.feitos} <span className="text-base font-sans font-normal text-ink/60">de {totais.total}</span>
               </p>
             </div>
             <div className="bg-surface rounded-xl border border-ink/10 p-4">
               <p className="text-xs uppercase tracking-wide text-ink/60 mb-1">Progresso geral</p>
-              <p className="font-display text-3xl font-semibold">{totais.pct}%</p>
+              <p className="text-3xl font-semibold tabular-nums">{totais.pct}%</p>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ export default function ResumoSemanal() {
                     <p className="font-medium text-sm mb-2">{m.materia}</p>
                     <div className="flex items-baseline justify-between text-sm">
                       <span className="text-ink/60">Aulas feitas</span>
-                      <span className="font-mono font-medium">
+                      <span className="tabular-nums font-medium">
                         {m.diasFeitos}/{m.diasPlanejados} dias
                       </span>
                     </div>
@@ -146,10 +146,10 @@ export default function ResumoSemanal() {
                     className="bg-surface rounded-lg border border-ink/10 px-3.5 py-2.5 flex items-baseline justify-between gap-3 text-sm"
                   >
                     <span className="min-w-0 truncate">
-                      <span className="font-mono text-xs text-ink/60 mr-2">{formatarDiaMes(s.data)}</span>
+                      <span className="tabular-nums text-xs text-ink/60 mr-2">{formatarDiaMes(s.data)}</span>
                       {s.nome}
                     </span>
-                    <span className="font-mono text-xs text-ink/60 whitespace-nowrap">{s.resumo ?? "sem resultados"}</span>
+                    <span className="tabular-nums text-xs text-ink/60 whitespace-nowrap">{s.resumo ?? "sem resultados"}</span>
                   </li>
                 ))}
               </ul>
@@ -196,7 +196,7 @@ export default function ResumoSemanal() {
                     key={item.id}
                     className="bg-surface rounded-lg border border-ink/10 px-3.5 py-2.5 grid grid-cols-[56px_1fr_auto] gap-3 items-start"
                   >
-                    <div className="font-mono text-xs text-ink/60 pt-0.5">
+                    <div className="tabular-nums text-xs text-ink/60 pt-0.5">
                       {formatarDiaMes(item.data)}
                       <div className="text-[10px] text-ink/60">{diaDaSemana(item.data)}</div>
                     </div>

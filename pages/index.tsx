@@ -128,18 +128,70 @@ function resumoSimulado(s: SimuladoRow): { texto: string; pct: number | null } {
   return { texto: `${s.resultados.length} áreas — média ${pct ?? "?"}%`, pct };
 }
 
-function PrimeirosPassos() {
+// Guia de três passos para quem acabou de instalar. Cada etapa se marca sozinha quando o dado existe,
+// e o guia some quando as três estão feitas.
+function PrimeirosPassos({ provas, totalSimulados }: { provas: ProvaDash[]; totalSimulados: number }) {
+  const passos = [
+    {
+      titulo: "Escolha a sua prova",
+      texto: "ENEM, Fuvest, Unicamp ou outra: use um modelo pronto ou defina as áreas você mesmo.",
+      feito: provas.length > 0,
+      href: "/provas",
+      acao: "Adicionar prova",
+    },
+    {
+      titulo: "Defina a data e a meta",
+      texto: "Diga quando é a prova e quanto quer acertar. O painel mostra a contagem regressiva e o que falta.",
+      // A meta pode ser em % da prova, em nota (ENEM) ou por área.
+      feito: provas.some((p) => Boolean(p.dataProva) && (p.metaPercentual != null || p.metaNota != null || p.areas.some((a) => a.metas.length > 0))),
+      href: "/provas",
+      acao: "Definir data e meta",
+    },
+    {
+      titulo: "Registre o primeiro simulado",
+      texto: "Lance os acertos por área, ou importe um CSV. O painel passa a comparar o resultado com a sua meta.",
+      feito: totalSimulados > 0,
+      href: "/simulados",
+      acao: "Registrar simulado",
+    },
+  ];
+  const atual = passos.findIndex((p) => !p.feito);
+  const feitos = passos.filter((p) => p.feito).length;
+  if (feitos === passos.length) return null;
+
   return (
-    <div className="bg-surface rounded-xl border border-ink/10 p-6 space-y-3">
-      <h2 className="font-display text-lg font-semibold">Comece escolhendo a sua prova</h2>
-      <p className="text-sm text-ink/70">
-        Cadastre o vestibular ou a prova que você vai fazer (ENEM, Fuvest, Unicamp ou outra), diga a data e quanto quer acertar.
-        O painel passa a mostrar a contagem regressiva e o quanto falta para a meta.
-      </p>
-      <Link href="/provas" className="inline-block bg-accent text-white rounded-md px-4 py-2 text-sm font-medium">
-        Adicionar minha prova
-      </Link>
-    </div>
+    <section aria-label="Primeiros passos" className="bg-surface rounded-xl border border-ink/10 p-6 space-y-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-lg font-semibold">Comece por aqui</h2>
+        <span className="tabular-nums text-xs text-ink/60">{feitos} de {passos.length} passos</span>
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-3">
+        {passos.map((p, i) => (
+          <li
+            key={p.titulo}
+            aria-current={i === atual ? "step" : undefined}
+            className={
+              "flex flex-col gap-2 rounded-lg border p-4 " +
+              (i === atual ? "border-accent/50 bg-accent/10" : "border-ink/10 bg-paper/40")
+            }
+          >
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-medium text-brand">
+                {p.feito ? "✓" : i + 1}
+              </span>
+              <h3 className="text-sm font-medium">{p.titulo}</h3>
+              {p.feito && <span className="ml-auto text-xs text-brand">Feito</span>}
+            </div>
+            <p className="text-sm text-ink/70">{p.texto}</p>
+            {i === atual && (
+              <Link href={p.href} className="mt-auto inline-block self-start bg-accent text-white rounded-md px-4 py-2 text-sm font-medium">
+                {p.acao}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -148,19 +200,26 @@ export default function Dashboard() {
   const [simulados, setSimulados] = useState<SimuladoRow[] | null>(null);
   const [plano, setPlano] = useState<PlanoEstudoRow[] | null>(null);
   const [abertoId, setAbertoId] = useState<string | null>(null);
+  const [erro, setErro] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/dashboard").then((r) => r.json()),
-      fetch("/api/simulados").then((r) => r.json()),
-      fetch("/api/plano").then((r) => r.json()),
-    ]).then(([d, s, p]) => {
-      setProvas(d);
-      setSimulados(s);
-      setPlano(p);
-    });
+    // Sessão expirada ou erro no servidor devolvem um objeto (não uma lista): tratar como falha,
+    // em vez de derrubar a página ou mostrar um painel vazio que parece dizer que não há dados.
+    const ler = (url: string) =>
+      fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${url} ${r.status}`))));
+    Promise.all([ler("/api/dashboard"), ler("/api/simulados"), ler("/api/plano")])
+      .then(([d, s, p]) => {
+        if (![d, s, p].every(Array.isArray)) throw new Error("resposta inesperada");
+        setProvas(d);
+        setSimulados(s);
+        setPlano(p);
+      })
+      .catch(() => setErro(true));
   }, []);
 
+  if (erro) {
+    return <p className="text-sm text-warn">Não foi possível carregar o painel. Recarregue a página.</p>;
+  }
   if (!provas || !simulados || !plano) {
     return <p className="text-sm text-ink/60">Carregando...</p>;
   }
@@ -199,14 +258,14 @@ export default function Dashboard() {
           <span className="inline-flex items-center gap-1.5 bg-surface border border-ink/10 rounded-full pl-2.5 pr-3 py-1.5 text-xs">
             <span className={"h-1.5 w-1.5 rounded-full " + (ultimaAtualizacaoPlano ? "bg-good" : "bg-brand")} />
             <span className="font-medium">Plano</span>
-            <span className="font-mono text-ink/60">
+            <span className="tabular-nums text-ink/60">
               {ultimaAtualizacaoPlano ? `atualizado ${formatHora(ultimaAtualizacaoPlano)}` : "sem dados"}
             </span>
           </span>
         </div>
       </div>
 
-      {provas.length === 0 && <PrimeirosPassos />}
+      <PrimeirosPassos provas={provas} totalSimulados={simulados.length} />
 
       {/* Contagem regressiva */}
       {proximas.length > 0 && (
@@ -217,9 +276,9 @@ export default function Dashboard() {
               href={`/provas/${p.slug}`}
               className="bg-surface rounded-xl border border-ink/10 p-4 hover:bg-paper/60 transition"
             >
-              <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Próxima prova</div>
-              <div className="font-display text-lg font-semibold mt-1 truncate">{p.nome}</div>
-              <div className="font-mono text-2xl text-brand mt-1">{rotuloContagem(p.dataProva!, hoje)}</div>
+              <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Próxima prova</div>
+              <div className="text-lg font-semibold mt-1 truncate">{p.nome}</div>
+              <div className="tabular-nums text-2xl font-medium text-brand mt-1">{rotuloContagem(p.dataProva!, hoje)}</div>
               <div className="text-xs text-ink/60 mt-1">{formatarDiaMes(p.dataProva!)}</div>
             </Link>
           ))}
@@ -234,8 +293,8 @@ export default function Dashboard() {
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Progresso geral</div>
-          <div className="font-display text-2xl font-semibold mt-1">
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Progresso geral</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">
             {progressoGeral != null ? `${progressoGeral}%` : "—"}
           </div>
           <div className="text-xs text-ink/60 mt-1">
@@ -243,14 +302,14 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Simulados registrados</div>
-          <div className="font-display text-2xl font-semibold mt-1">{simulados.length}</div>
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Simulados registrados</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">{simulados.length}</div>
           <div className="text-xs text-ink/60 mt-1">no total</div>
         </div>
         <CardRevisao />
         <div className="bg-surface rounded-xl border border-ink/10 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-wide text-ink/60">Cronograma cumprido</div>
-          <div className="font-display text-2xl font-semibold mt-1">
+          <div className="font-medium text-[11px] uppercase tracking-wide text-ink/60">Cronograma cumprido</div>
+          <div className="text-2xl font-semibold tabular-nums mt-1">
             {plano.length ? `${cronogramaFeito}/${plano.length}` : "—"}
           </div>
           <div className="text-xs text-ink/60 mt-1">
@@ -296,7 +355,7 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="text-[15px] font-medium truncate">{prova.nome}</div>
                       {prova.dataProva && (
-                        <div className="text-xs text-ink/60 font-mono">
+                        <div className="text-xs text-ink/60 tabular-nums">
                           {formatarDiaMes(prova.dataProva)} · {rotuloContagem(prova.dataProva, hoje)}
                         </div>
                       )}
@@ -308,7 +367,7 @@ export default function Dashboard() {
                           style={{ width: `${pct ?? 0}%` }}
                         />
                       </div>
-                      <span className={"font-mono text-xs w-9 text-right " + (sensorHeader ? SENSOR_TEXT[sensorHeader] : "text-ink/60")}>
+                      <span className={"tabular-nums text-xs w-9 text-right " + (sensorHeader ? SENSOR_TEXT[sensorHeader] : "text-ink/60")}>
                         {pct != null ? `${pct}%` : "—"}
                       </span>
                     </div>
@@ -324,7 +383,7 @@ export default function Dashboard() {
                               {prova.metaNota != null ? `, meta ${prova.metaNota}` : ""}
                             </div>
                           </div>
-                          <span className={"font-mono text-lg flex items-center gap-2 " + (sensorNota ? SENSOR_TEXT[sensorNota] : "text-ink")}>
+                          <span className={"tabular-nums text-lg flex items-center gap-2 " + (sensorNota ? SENSOR_TEXT[sensorNota] : "text-ink")}>
                             {sensorNota && <span className={"h-2 w-2 rounded-full " + SENSOR_DOT[sensorNota]} />}
                             {nota}
                           </span>
@@ -401,7 +460,7 @@ export default function Dashboard() {
               >
                 <span className={"h-1.5 w-1.5 rounded-full flex-shrink-0 " + (pct == null ? "bg-ink/20" : pct >= 60 ? "bg-good" : "bg-warn")} />
                 <span className="font-medium w-44 flex-shrink-0 truncate">{s.prova.nome}</span>
-                <span className="font-mono text-xs text-ink/60 w-14 flex-shrink-0">{formatarDiaMes(s.data)}</span>
+                <span className="tabular-nums text-xs text-ink/60 w-14 flex-shrink-0">{formatarDiaMes(s.data)}</span>
                 <span className="text-ink/70 flex-1 truncate">{texto}</span>
                 <span className={"text-xs font-medium flex-shrink-0 " + cor}>
                   {pct != null ? `${pct}%` : ""}

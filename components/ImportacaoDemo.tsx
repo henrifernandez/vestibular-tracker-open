@@ -41,7 +41,13 @@ export default function ImportacaoDemo({ titulo, descricao, passos, csv, childre
 
       <div className="space-y-2">
         <p className="text-xs text-ink/60">Exemplo de arquivo CSV</p>
-        <div className="overflow-x-auto rounded-lg border border-ink/10">
+        {/* tabIndex permite rolar a tabela pelo teclado quando ela não cabe na tela (celular) */}
+        <div
+          role="region"
+          aria-label="Exemplo de arquivo CSV, role para os lados se não couber"
+          tabIndex={0}
+          className="overflow-x-auto rounded-lg border border-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
           <table className="w-full min-w-[32rem] text-xs">
             <thead className="bg-paper/60 text-left text-ink/60">
               <tr>
@@ -57,7 +63,7 @@ export default function ImportacaoDemo({ titulo, descricao, passos, csv, childre
                 <tr key={i} className="border-t border-ink/10">
                   {cabecalho.map((coluna, j) => (
                     <td key={coluna} className="px-3 py-2 font-mono text-ink/80">
-                      {linha[j] || <span className="text-ink/30">(vazio)</span>}
+                      {linha[j] || <span className="text-ink/60">(vazio)</span>}
                     </td>
                   ))}
                 </tr>

@@ -126,7 +126,7 @@ export default function Calendario() {
             const dias = diasEntre(hoje!, p.dia);
             return (
               <div key={p.id} className="rounded-lg border border-ink/10 bg-surface p-3">
-                <div className="font-display text-3xl font-semibold leading-none">{dias === 0 ? "hoje" : dias}</div>
+                <div className="text-3xl font-semibold tabular-nums leading-none">{dias === 0 ? "hoje" : dias}</div>
                 <div className="mt-1 text-xs text-ink/60">{dias === 0 ? "" : dias === 1 ? "dia" : "dias"}</div>
                 <div className="mt-2 text-sm font-medium">{p.titulo}</div>
                 <div className="text-xs text-ink/60">
@@ -206,7 +206,7 @@ export default function Calendario() {
                         onClick={() => alternar(abertos, dia, setAbertos)}
                         className="flex min-w-0 items-baseline gap-2 text-left text-xs text-ink/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
                       >
-                        <b className="font-display text-xl font-semibold text-ink">{Number(dia.slice(8))}</b>
+                        <b className="text-xl font-semibold tabular-nums text-ink">{Number(dia.slice(8))}</b>
                         <span>{DIAS[d.getUTCDay()]}</span>
                         {(dia === inicio || dia.endsWith("-01")) && (
                           <span className="uppercase tracking-wider">{MESES[Number(dia.slice(5, 7)) - 1]}</span>
@@ -216,7 +216,7 @@ export default function Calendario() {
                         <span
                           title={`Faltam ${faltam} dias para ${proxima!.titulo}`}
                           className={
-                            "shrink-0 rounded px-1.5 py-0.5 font-mono text-[10.5px] " +
+                            "shrink-0 rounded px-1.5 py-0.5 tabular-nums text-[10.5px] " +
                             (faltam === 0 ? "bg-ink font-medium text-paper" : "bg-ink/10 text-ink/70")
                           }
                         >
@@ -248,7 +248,7 @@ export default function Calendario() {
                           className={"rounded px-2 py-1 text-xs leading-snug " + (cor ? "" : "border border-dotted border-ink/30 text-ink/70")}
                           style={cor ? { borderLeft: `3px solid ${cor}`, backgroundColor: `${cor}1F` } : undefined}
                         >
-                          <span className="block font-mono text-[10.5px] text-ink/60">
+                          <span className="block tabular-nums text-[10.5px] text-ink/60">
                             {e.inicio ? (e.fim ? `${hm(e.inicio)} a ${hm(e.fim)}` : hm(e.inicio)) : "dia todo"}
                           </span>
                           {e.titulo}

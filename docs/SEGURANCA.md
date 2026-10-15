@@ -6,7 +6,7 @@ Resumo do modelo de segurança, do que foi revisado e das limitações conhecida
 
 - **Uma senha de administrador** (`ADMIN_PASSWORD`). Não há contas de usuário.
 - Sessão em cookie `sessao`: `httpOnly`, `SameSite=Lax`, `Secure` em produção, validade de 30 dias. O valor é `<expiração>.<HMAC-SHA256>`, assinado com `SESSION_SECRET`.
-- A senha é comparada em tempo constante. Há limite de 5 tentativas de login por minuto por IP.
+- A senha é comparada em tempo constante. Há limite de 5 tentativas de login por minuto por IP. O IP vem do cabeçalho da hospedagem só na Vercel ou com `TRUST_PROXY=true` (app atrás do seu próprio proxy); fora disso vale o endereço da conexão, porque o cliente poderia forjar o cabeçalho. Em Docker com a porta publicada, a conexão chega pelo gateway da rede do Docker, então todos compartilham o mesmo contador: isso segura força bruta, mas 5 erros de qualquer pessoa bloqueiam o login por um minuto. O contador fica na memória e zera ao reiniciar.
 - `proxy.ts` (o antigo middleware do Next) protege **todas** as páginas e rotas de API. Só `/login` e `/api/login` são públicas.
 - **Fail closed:** sem `ADMIN_PASSWORD` ou `SESSION_SECRET` (fora do modo demonstração) o app responde 500 a tudo, em vez de ficar aberto.
 - Escritas (POST, PATCH, DELETE) exigem que o cabeçalho `Origin`, quando presente, seja o próprio host.
@@ -38,7 +38,7 @@ Resumo do modelo de segurança, do que foi revisado e das limitações conhecida
 - **CSP com `unsafe-inline`:** o Pages Router injeta scripts e estilos inline. Migrar para nonces exigiria o App Router.
 - **Sessões não são revogáveis individualmente.** Para invalidar todas, troque o `SESSION_SECRET`.
 - O texto da redação é enviado ao Google Gemini quando você usa "Avaliar com IA". Não use com conteúdo que você não queira enviar a um terceiro.
-- O cookie de sessão é `Secure` em produção: em produção o login só funciona por HTTPS (ou em `localhost`). Quem hospeda em rede local sem HTTPS precisa de um proxy com TLS.
+- O cookie de sessão é `Secure` em produção: em produção o login só funciona por HTTPS (ou em `localhost`). Quem hospeda em rede local sem HTTPS deve colocar um proxy com TLS na frente. A variável `COOKIE_SEM_HTTPS=true` tira a marca `Secure` para esse caso (e o `docker compose` a liga por padrão, porque só escuta em `localhost`), mas ela deixa o cookie trafegar sem criptografia: não a use em um servidor acessível pela internet.
 - **Dependências:** `npm audit --omit=dev` está limpo (Next atualizado para 16.4.0, que corrige avisos críticos da 16.3.x). O `npm audit` completo ainda lista avisos em dependências de **desenvolvimento** (ferramentas de build e teste, por exemplo `braces`), que não vão para o servidor em produção. Dependabot acompanha as atualizações.
 - **Modo demonstração sobre um banco real expõe tudo para leitura.** O app não consegue saber se o banco é de demonstração: use sempre um banco separado e descartável.
 - `DEMO_MODE` é lida em tempo de execução pelo proxy e fixada no build para o navegador (`NEXT_PUBLIC_DEMO_MODE`). Mantenha as duas iguais no mesmo projeto.

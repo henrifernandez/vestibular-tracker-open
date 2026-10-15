@@ -1,0 +1,18 @@
+# Nada disto deve entrar na imagem.
+.git
+.github
+.next
+.vercel
+node_modules
+# Arquivos de ambiente em qualquer pasta (por exemplo prisma/.env), exceto o exemplo.
+**/.env
+**/.env.*
+!**/.env.example
+*.log
+*.tsbuildinfo
+/capturas
+/playwright-report
+/test-results
+docs/capturas
+tests
+.claude

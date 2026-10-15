@@ -75,3 +75,33 @@ jobs:
           npx next start -p 3100 &
           npx wait-on http://localhost:3100 --timeout 60000
           SAIDA=/tmp/capturas BASE_URL=http://localhost:3100 npx tsx scripts/auditoria-visual.ts
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # No nível do job: o compose exige estas variáveis para ler o arquivo, inclusive em "logs" e "down".
+    env:
+      ADMIN_PASSWORD: senha-de-teste-do-ci
+      SESSION_SECRET: segredo-de-teste-do-ci-com-32-caracteres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Subir o app e o banco com o compose
+        run: docker compose up --build --wait --wait-timeout 300
+      - name: Conferir login, bloqueio sem sessão e acesso com sessão
+        run: |
+          curl -fsS -o /dev/null http://localhost:3000/login
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/provas)" = "401"
+          curl -fsS -D /tmp/cabecalhos -c /tmp/sessao -o /dev/null -X POST http://localhost:3000/api/login \
+            -H 'Content-Type: application/json' -H 'Origin: http://localhost:3000' \
+            -d '{"senha":"senha-de-teste-do-ci"}'
+          test "$(curl -s -b /tmp/sessao -o /dev/null -w '%{http_code}' http://localhost:3000/api/provas)" = "200"
+          # O compose liga COOKIE_SEM_HTTPS: o cookie precisa sair sem Secure (senão o login por HTTP não vale)
+          # e sempre com HttpOnly.
+          grep -i '^set-cookie: sessao=' /tmp/cabecalhos | grep -qvi 'secure'
+          grep -i '^set-cookie: sessao=' /tmp/cabecalhos | grep -qi 'httponly'
+      - name: Logs do compose (só se falhar)
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Derrubar
+        if: always()
+        run: docker compose down -v
