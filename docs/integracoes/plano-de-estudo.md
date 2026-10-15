@@ -67,6 +67,7 @@ Se você importou um CSV no Notion, ele cria tudo como texto: converta `Data` pa
 
 - Somente leitura: o app nunca escreve no Notion. Versão da API fixada em `2022-06-28`.
 - A chave de cada linha é a URL da página. Sincronizar de novo atualiza em vez de duplicar.
+- A marcação feita no app (caixa de seleção do cronograma) vale até a próxima sincronização: o Notion é a fonte da verdade, então o valor do checkbox de lá volta a prevalecer. Quem usa o Notion deve marcar o dia lá.
 - **Reconciliação:** itens que sumiram do Notion ficam **inativos** (somem das telas, mas o histórico permanece). Isso só acontece quando a leitura foi completa e sem erros.
 - Limites: 2.000 itens, uma sincronização por minuto, pausa entre chamadas e nova tentativa em caso de limite de requisições do Notion.
 - Datas com horário viram o dia no fuso de Brasília.

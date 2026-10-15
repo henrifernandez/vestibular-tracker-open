@@ -34,6 +34,7 @@ export default function ResumoSemanal() {
   const [erro, setErro] = useState(false);
   const [filtroMateria, setFiltroMateria] = useState<string>("Todas");
   const [soPendentes, setSoPendentes] = useState(false);
+  const [erroMarcar, setErroMarcar] = useState(false);
 
   const carregar = useCallback(() => {
     setErro(false);
@@ -49,6 +50,27 @@ export default function ResumoSemanal() {
   }, []);
 
   useEffect(carregar, [carregar]);
+
+  // Marca/desmarca um dia como feito: atualiza a tela na hora e desfaz se o servidor recusar.
+  async function marcarFeito(item: PlanoDia, feito: boolean) {
+    setErroMarcar(false);
+    const trocar = (valor: boolean) =>
+      setPlano((atual) => atual && atual.map((p) => (p.id === item.id ? { ...p, feito: valor } : p)));
+    trocar(feito);
+    try {
+      const r = await fetch(`/api/plano/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feito }),
+      });
+      if (!r.ok) throw new Error();
+      const novo = await fetch("/api/resumo-semanal").then((x) => (x.ok ? x.json() : Promise.reject()));
+      setResumo(novo);
+    } catch {
+      trocar(!feito);
+      setErroMarcar(true);
+    }
+  }
 
   const materias = useMemo(() => ["Todas", ...Array.from(new Set((plano ?? []).map((p) => p.materia))).sort()], [plano]);
 
@@ -181,6 +203,11 @@ export default function ResumoSemanal() {
               </label>
             </div>
 
+            {erroMarcar && (
+              <p role="alert" className="text-sm text-warn mb-3">
+                Não foi possível salvar a marcação. Tente de novo.
+              </p>
+            )}
             <div className="space-y-1.5">
               {listaFiltrada.length === 0 && (
                 <p className="text-sm text-ink/60 text-center py-8">
@@ -211,14 +238,25 @@ export default function ResumoSemanal() {
                       </div>
                       <p className="text-xs text-ink/60 line-clamp-2">{item.observacoes}</p>
                     </div>
-                    <span
-                      className={
-                        "text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap " +
-                        (item.feito ? "bg-good/10 text-good" : passado ? "bg-warn/10 text-warn" : "bg-ink/5 text-ink/60")
-                      }
-                    >
-                      {item.feito ? "Feito" : passado ? "Atrasado" : "Pendente"}
-                    </span>
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={
+                          "text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap " +
+                          (item.feito ? "bg-good/10 text-good" : passado ? "bg-warn/10 text-warn" : "bg-ink/5 text-ink/60")
+                        }
+                      >
+                        {item.feito ? "Feito" : passado ? "Atrasado" : "Pendente"}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={item.feito}
+                        disabled={DEMO}
+                        onChange={(e) => marcarFeito(item, e.target.checked)}
+                        aria-label={`Marcar ${item.materia} de ${formatarDiaMes(item.data)} como feito`}
+                        title={DEMO ? "Na demonstração, as marcações ficam desativadas" : "Marcar como feito"}
+                        className="h-4 w-4 accent-accent cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
                   </div>
                 );
               })}
