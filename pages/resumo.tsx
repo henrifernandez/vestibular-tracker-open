@@ -72,7 +72,7 @@ export default function ResumoSemanal() {
   return (
     <div className="space-y-8">
       <Head>
-        <title>Resumo semanal | Monitor de Acertos</title>
+        <title>Resumo semanal | Vestibular Tracker</title>
       </Head>
       <div>
         <h1 className="font-display text-2xl font-semibold">Resumo semanal</h1>
