@@ -157,18 +157,37 @@ async function chamar(caminho: string, init: RequestInit = {}, tentativas = 4): 
       continue;
     }
     if (r.status === 401) throw new NotionErro("token do Notion inválido", 401);
+    if (r.status === 403)
+      throw new NotionErro("o Notion negou o acesso. Confira se a integração pode ler conteúdo (aba Capacidades, em notion.so/profile/integrations)", 403);
     if (r.status === 404)
       throw new NotionErro("database não encontrada. Confira o ID e se ela foi compartilhada com a integração (menu ... > Conexões)", 404);
+    if (r.status === 400)
+      throw new NotionErro(
+        "o Notion recusou a consulta (erro 400). Se a database tem mais de uma fonte de dados, veja o guia em docs/integracoes/notion.md",
+        400
+      );
     if (!r.ok) throw new NotionErro(`o Notion respondeu com erro ${r.status}`, r.status);
     return r.json();
   }
   throw new NotionErro("limite de requisições do Notion; tente novamente em instantes", 429);
 }
 
+// Aceita o ID puro (com ou sem hífens) ou o link da database inteiro. Num link, o ID é o trecho de
+// 32 caracteres do caminho; o que vem depois de "?v=" é o ID da visão, não o da database.
+export function normalizarIdNotion(bruto: string): string | null {
+  const caminho = bruto.trim().split(/[?#]/)[0].replace(/-/g, "");
+  const achados = caminho.match(/[0-9a-fA-F]{32}/g);
+  return achados ? achados[achados.length - 1].toLowerCase() : null;
+}
+
 function idDaDatabase(): string {
-  const id = process.env.NOTION_DATABASE_ID;
-  if (!id) throw new NotionErro("NOTION_DATABASE_ID não configurado");
-  return encodeURIComponent(id.replace(/-/g, ""));
+  const bruto = process.env.NOTION_DATABASE_ID;
+  if (!bruto) throw new NotionErro("NOTION_DATABASE_ID não configurado");
+  const id = normalizarIdNotion(bruto);
+  if (!id) {
+    throw new NotionErro("NOTION_DATABASE_ID inválido: use os 32 caracteres que vêm antes de ?v= no link da database (veja docs/integracoes/notion.md)");
+  }
+  return id;
 }
 
 export async function testarConexao() {

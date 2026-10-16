@@ -100,7 +100,7 @@ Without `ADMIN_PASSWORD` and `SESSION_SECRET` (outside demo mode) the app **refu
 
 - **Study plan (CSV)**: in *Resumo semanal*, download the template, fill `data, materia, feito, topicos, observacoes` and import it. There is a preview with per-row errors, and re-importing the same file updates rows without duplicating them. A ready-made prompt converts a table from another tool (such as Notion) to this format with an AI assistant.
 - **Marking a day as done**: in the full schedule of *Resumo semanal*, each day has a checkbox, and the last-7-days summary updates immediately. If you sync from Notion or re-import the CSV, the `feito` value from there takes precedence over a mark made in the app.
-- **Study plan (Notion)**: optional direct sync with a connection test. See [docs/integracoes/plano-de-estudo.md](docs/integracoes/plano-de-estudo.md) (Portuguese).
+- **Study plan (Notion)**: optional direct sync with a connection test. A complete step-by-step guide, with a sample database and a fix for every error message, is in [docs/integracoes/notion.md](docs/integracoes/notion.md) (Portuguese). Column formats and the CSV path are in [docs/integracoes/plano-de-estudo.md](docs/integracoes/plano-de-estudo.md).
 - **Calendar**: import `.ics` or CSV. See [docs/integracoes/calendario.md](docs/integracoes/calendario.md) (Portuguese).
 
 ## Demo mode

@@ -39,45 +39,15 @@ Cole a tabela exportada depois do prompt. **Atenção:** você está enviando o 
 
 ## Caminho 2: sincronizar direto com o Notion (opcional)
 
-Útil se você quer atualizar o plano sem exportar arquivos. Dá mais trabalho de configuração.
+Útil se você quer que o plano se atualize a partir de uma tabela do Notion, sem exportar arquivos. Dá mais trabalho de configuração, por isso o CSV continua sendo o recomendado para começar.
 
-### Preparar a database
+**O passo a passo completo está em [notion.md](notion.md)**: como preparar a database (com um [arquivo de exemplo](../modelos/plano-notion-exemplo.csv) para importar), criar a integração, conectar, pegar o ID (o app aceita o link inteiro), configurar no Docker, local ou Vercel, testar e resolver cada mensagem de erro.
 
-A database precisa ter colunas com estes nomes (maiúsculas e acentos não importam) e tipos:
-
-| Coluna | Nomes aceitos | Tipos aceitos |
-|---|---|---|
-| Data (obrigatória) | Data, Dia, Date | Date |
-| Matéria (obrigatória) | Matéria, Disciplina, Subject | Select, Title, Text, Status |
-| Feito (obrigatória) | Feito, Concluído, Done | Checkbox, Select, Status, Text |
-| Tópicos | Tópicos, Conteúdo, Assunto | Text, Select, Multi-select |
-| Observações | Observações, Notas, Obs | Text |
-
-Se você importou um CSV no Notion, ele cria tudo como texto: converta `Data` para **Date** e `Feito` para **Checkbox** (clique no nome da coluna, *Edit property*, *Type*).
-
-### Conectar
-
-1. Em [notion.so/profile/integrations](https://www.notion.so/profile/integrations), crie uma integração **interna** e copie o *Internal Integration Secret*.
-2. Abra a database no Notion, clique em **...** (canto superior direito), **Conexões** e adicione a integração. **Sem esse passo o Notion responde "não encontrada".**
-3. Copie o ID da database: é o trecho de 32 caracteres da URL, antes do `?v=`.
-4. No `.env` (ou nas variáveis da Vercel): `NOTION_TOKEN` e `NOTION_DATABASE_ID`. Reinicie o app.
-5. Em **Resumo semanal** aparece o bloco **Sincronizar com o Notion**. Clique em **Testar conexão** (lista colunas ausentes ou de tipo errado) e depois em **Sincronizar**.
-
-### Como funciona
+Resumo das regras, para consulta rápida:
 
 - Somente leitura: o app nunca escreve no Notion. Versão da API fixada em `2022-06-28`.
-- A chave de cada linha é a URL da página. Sincronizar de novo atualiza em vez de duplicar.
+- A chave de cada linha é o **ID da página** do Notion. Sincronizar de novo atualiza em vez de duplicar.
 - A marcação feita no app (caixa de seleção do cronograma) vale até a próxima sincronização: o Notion é a fonte da verdade, então o valor do checkbox de lá volta a prevalecer. Quem usa o Notion deve marcar o dia lá.
 - **Reconciliação:** itens que sumiram do Notion ficam **inativos** (somem das telas, mas o histórico permanece). Isso só acontece quando a leitura foi completa e sem erros.
 - Limites: 2.000 itens, uma sincronização por minuto, pausa entre chamadas e nova tentativa em caso de limite de requisições do Notion.
 - Datas com horário viram o dia no fuso de Brasília.
-
-### Problemas comuns
-
-| Sintoma | Causa provável |
-|---|---|
-| "database não encontrada" | A integração não foi adicionada em **Conexões**, ou o ID está errado |
-| "token do Notion inválido" | `NOTION_TOKEN` errado ou revogado |
-| "coluna ... não encontrada" | Nome da coluna fora da lista aceita |
-| "a coluna ... é do tipo ..." | Tipo errado (por exemplo, `Data` como texto) |
-| "limite de requisições" | Espere um minuto e tente de novo |

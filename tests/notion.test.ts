@@ -1,14 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import db from "./fixtures/notion-database.json";
 import consulta from "./fixtures/notion-consulta.json";
-import { analisarEsquema, buscarLinhas, converterPagina, diaDoNotion, testarConexao } from "@/lib/notion";
+import { analisarEsquema, buscarLinhas, converterPagina, diaDoNotion, normalizarIdNotion, testarConexao } from "@/lib/notion";
 import { validarLinhas } from "@/lib/plano";
 
 const ENV = { ...process.env };
+const ID = "0123456789abcdef0123456789abcdef";
 
 beforeEach(() => {
   process.env.NOTION_TOKEN = "secret_token_que_nunca_deve_vazar";
-  process.env.NOTION_DATABASE_ID = "abc123";
+  process.env.NOTION_DATABASE_ID = ID;
 });
 afterEach(() => {
   process.env = { ...ENV };
@@ -65,7 +66,7 @@ describe("chamadas à API", () => {
     const chamadas = simularNotion([{ corpo: db }]);
     const r = await testarConexao();
     expect(r.titulo).toBe("Plano de estudo");
-    expect(chamadas[0].url).toContain("/databases/abc123");
+    expect(chamadas[0].url).toContain(`/databases/${ID}`);
     const h = chamadas[0].init?.headers as Record<string, string>;
     expect(h["Notion-Version"]).toBe("2022-06-28");
     expect(h.Authorization).toBe("Bearer secret_token_que_nunca_deve_vazar");
@@ -86,6 +87,12 @@ describe("chamadas à API", () => {
     simularNotion([{ status: 401 }]);
     await expect(testarConexao()).rejects.toThrow(/token do Notion inválido/);
   });
+  it("traduz 403 (sem permissão) e 400 (provável fonte de dados extra) em mensagens úteis", async () => {
+    simularNotion([{ status: 403 }]);
+    await expect(testarConexao()).rejects.toThrow(/Capacidades/);
+    simularNotion([{ status: 400 }]);
+    await expect(testarConexao()).rejects.toThrow(/mais de uma fonte de dados/);
+  });
   it("o token não aparece em nenhuma mensagem de erro", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("falha com Bearer secret_token_que_nunca_deve_vazar"))));
     try {
@@ -100,6 +107,34 @@ describe("chamadas à API", () => {
     const f = vi.fn();
     vi.stubGlobal("fetch", f);
     await expect(testarConexao()).rejects.toThrow(/NOTION_TOKEN/);
+    expect(f).not.toHaveBeenCalled();
+  });
+});
+
+describe("ID da database", () => {
+  const id = "0123456789abcdef0123456789abcdef";
+  it("aceita o ID puro, com hífens e em maiúsculas", () => {
+    expect(normalizarIdNotion(id)).toBe(id);
+    expect(normalizarIdNotion("01234567-89ab-cdef-0123-456789abcdef")).toBe(id);
+    expect(normalizarIdNotion(id.toUpperCase())).toBe(id);
+    expect(normalizarIdNotion(`  ${id}  `)).toBe(id);
+  });
+  it("extrai o ID de um link e ignora o ID da visão (?v=)", () => {
+    const visao = "fedcba9876543210fedcba9876543210";
+    expect(normalizarIdNotion(`https://www.notion.so/${id}?v=${visao}`)).toBe(id);
+    expect(normalizarIdNotion(`https://www.notion.so/meu-espaco/Plano-de-estudo-${id}?v=${visao}&pvs=4`)).toBe(id);
+    expect(normalizarIdNotion(`https://www.notion.so/${id}#comentario`)).toBe(id);
+  });
+  it("devolve null para texto sem ID", () => {
+    expect(normalizarIdNotion("")).toBeNull();
+    expect(normalizarIdNotion("abc123")).toBeNull();
+    expect(normalizarIdNotion("https://www.notion.so/")).toBeNull();
+  });
+  it("um ID inválido gera mensagem com o caminho para a documentação, sem chamar o Notion", async () => {
+    process.env.NOTION_DATABASE_ID = "isso-nao-e-um-id";
+    const f = vi.fn();
+    vi.stubGlobal("fetch", f);
+    await expect(testarConexao()).rejects.toThrow(/docs\/integracoes\/notion\.md/);
     expect(f).not.toHaveBeenCalled();
   });
 });

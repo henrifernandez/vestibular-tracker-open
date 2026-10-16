@@ -115,7 +115,7 @@ Sem `ADMIN_PASSWORD` e `SESSION_SECRET` (e fora do modo demonstração), o app *
 
 - **Plano de estudo (CSV)**: em *Resumo semanal*, baixe o modelo, preencha `data, materia, feito, topicos, observacoes` e importe. Há prévia com erros por linha, e importar o mesmo arquivo de novo atualiza sem duplicar. Tem um prompt pronto para converter uma tabela de outra ferramenta (como o Notion) para esse formato com uma IA.
 - **Marcar o dia como feito**: no *Cronograma completo* do Resumo semanal, cada dia tem uma caixa de seleção. A marcação atualiza o resumo dos últimos 7 dias na hora. Se você sincroniza com o Notion ou reimporta o CSV, o valor da coluna `feito` de lá prevalece sobre a marcação feita no app.
-- **Plano de estudo (Notion)**: opcional, com sincronização direta e teste de conexão. Passo a passo em [docs/integracoes/plano-de-estudo.md](docs/integracoes/plano-de-estudo.md).
+- **Plano de estudo (Notion)**: opcional, com sincronização direta e teste de conexão. Guia completo, com database de exemplo e solução para cada erro, em [docs/integracoes/notion.md](docs/integracoes/notion.md). O formato das colunas e o CSV estão em [docs/integracoes/plano-de-estudo.md](docs/integracoes/plano-de-estudo.md).
 - **Calendário**: importe `.ics` ou CSV. Detalhes em [docs/integracoes/calendario.md](docs/integracoes/calendario.md).
 
 ## Modo demonstração
