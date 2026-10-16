@@ -38,9 +38,16 @@ export default function SincronizarNotion({ aoSincronizar }: { aoSincronizar: ()
               }
         );
       }
+      const avisos: string[] = [];
+      if (d.truncado) {
+        avisos.push(
+          `A database tem mais de ${d.sincronizados} itens. Só os primeiros ${d.sincronizados} foram lidos e nada foi marcado como inativo. Divida a database (por exemplo, uma por semestre).`
+        );
+      }
+      for (const e of (d.erros ?? []).slice(0, 20) as { linha: number; mensagem: string }[]) avisos.push(`Item ${e.linha}: ${e.mensagem}`);
       setResultado({
         texto: `${d.sincronizados} itens sincronizados${d.inativados ? `, ${d.inativados} marcados como inativos` : ""}.`,
-        problemas: d.erros?.length ? d.erros.slice(0, 20).map((e: { linha: number; mensagem: string }) => `Item ${e.linha}: ${e.mensagem}`) : undefined,
+        problemas: avisos.length ? avisos : undefined,
       });
       aoSincronizar();
     } catch {

@@ -77,6 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       inativados,
       erros: [...errosLeitura, ...erros],
       reconciliado: reconciliar,
+      truncado: !completo,
     });
   } catch (e) {
     ultimaSincronizacao = 0; // falhou: permite tentar de novo

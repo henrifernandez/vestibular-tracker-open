@@ -55,7 +55,7 @@ Dados de apoio ficam em `tests/fixtures/` (respostas de exemplo do Notion) e o u
 
 Este arquivo testa o que o [guia do Notion](integracoes/notion.md) promete, passando pela rota `/api/plano/notion` de verdade e gravando no Postgres de verdade. A **única** parte simulada é a API do Notion: a função `fetch` é substituída por uma que responde como o Notion (versão `2022-06-28`), só com os dois endpoints que o app usa. A suíte leva cerca de 2 segundos.
 
-### O que está coberto (26 casos)
+### O que está coberto (28 casos)
 
 **Conexão**
 - Testar conexão envia o token e a versão certa, consulta só o ID da database e não grava nada.
@@ -82,6 +82,7 @@ Este arquivo testa o que o [guia do Notion](integracoes/notion.md) promete, pass
 - Linha editada é atualizada; linha removida no Notion fica **inativa**, com o histórico preservado.
 - **O Notion vence:** uma marcação feita no app é sobrescrita na sincronização seguinte.
 - Mais de 100 linhas são lidas em páginas e todas sincronizam.
+- Limite de 2.000 linhas: com exatamente 2.000, lê tudo e reconcilia; com 2.001, lê 2.000, avisa o corte (`truncado`) e não inativa nada.
 
 **Valores da coluna Feito e avisos por linha**
 - `Feito` como texto: `sim` e `x` contam como feito, `pendente` e vazio como não feito.

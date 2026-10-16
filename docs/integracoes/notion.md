@@ -175,8 +175,25 @@ Escolha o seu caso:
 - **O que some do Notion:** se você apagar uma linha no Notion, ela some do app na sincronização seguinte (fica **inativa**: o histórico é preservado, mas ela deixa de aparecer). Isso só acontece quando a leitura inteira deu certo, para nunca esconder dados por causa de uma falha no meio.
 - **Quem manda no "feito":** o Notion. Uma marcação feita no app vale até a próxima sincronização.
 - **Datas com horário** viram o dia, no fuso de Brasília.
-- **Limites:** até 2.000 linhas, uma sincronização por minuto, com pausas e novas tentativas automáticas se o Notion pedir calma.
+- **Limites:** até 2.000 linhas, uma sincronização por minuto, com pausas e novas tentativas automáticas se o Notion pedir calma. Se a database passar de 2.000 linhas, o app lê as primeiras 2.000, **avisa na tela** e não inativa nada naquela rodada.
 - **Somente leitura:** a versão da API do Notion é fixada em `2022-06-28`.
+- **Sincronização manual:** ela só acontece quando você clica em **Sincronizar**. Na versão aberta não existe agendamento. Para repetir sozinho, é preciso uma automação externa (por exemplo, n8n ou um agendador) que chame o app.
+
+### O que ainda não é suportado
+
+Para você não perder tempo tentando:
+
+| Situação | O que acontece | O que fazer |
+|---|---|---|
+| Coluna de **fórmula, relação ou rollup** no lugar de `Data`, `Matéria` ou `Feito` | O teste de conexão acusa o tipo da coluna | Crie uma coluna simples (data, seleção ou caixa de seleção) e preencha com ela |
+| **Visões e filtros** do Notion | São ignorados: o app lê a database inteira, não só o que aparece na sua visão | Tire da database o que não deve entrar, ou use uma database só para o plano |
+| **Visão vinculada** (*linked view*) de outra database | O ID de uma visão vinculada não funciona | Use o ID da database original |
+| **Intervalo de datas** (início e fim) | Vale só a data de início | Crie uma linha por dia |
+| Database com **mais de 2.000 linhas** | Lê as primeiras 2.000 e avisa na tela | Divida a database (por exemplo, uma por semestre) |
+| Database com **mais de uma fonte de dados** | Erro 400 | Veja o aviso abaixo |
+| **Escrever** no Notion | Não existe: o app só lê | Marque os dias no Notion |
+| Sincronizar **sozinho**, em horários fixos | Não existe na versão aberta | Automação externa (n8n, cron) |
+| Várias databases ao mesmo tempo | Uma só por instalação | Junte as matérias numa database, com a coluna `Matéria` |
 
 ### Atenção: databases com mais de uma "fonte de dados"
 
@@ -203,10 +220,11 @@ Em 2025 o Notion lançou uma versão nova da API em que uma database pode ter v�
 | **"não foi possível falar com o Notion (rede ou tempo esgotado)"** | Sem internet no servidor ou o Notion lento | Tente de novo; confira a conexão da máquina/hospedagem |
 | Marquei um dia no app e ele **voltou desmarcado** | O Notion vence na sincronização | Marque o dia no Notion |
 | Sincronizou, mas **faltam dias** | Linhas sem data, ou fora de uma database original | Veja a lista de avisos abaixo do botão |
+| Aviso **"A database tem mais de 2000 itens"** | A database passou do limite e só as primeiras 2.000 linhas foram lidas | Divida a database (por exemplo, uma por semestre). Enquanto isso, nada é inativado |
 
 ## Como isso é testado
 
-A sincronização é coberta por testes automatizados que passam pela rota de verdade e pelo banco, com a API do Notion simulada: 26 casos, incluindo cada mensagem de erro da tabela acima. Detalhes em [TESTES.md](../TESTES.md). Eles não substituem uma execução com uma conta Notion real, e por isso o guia pede que você avise se algum passo estiver diferente do que aparece na sua tela.
+A sincronização é coberta por testes automatizados que passam pela rota de verdade e pelo banco, com a API do Notion simulada: 28 casos, incluindo cada mensagem de erro da tabela acima. Detalhes em [TESTES.md](../TESTES.md). Eles não substituem uma execução com uma conta Notion real, e por isso o guia pede que você avise se algum passo estiver diferente do que aparece na sua tela.
 
 ## Pedindo ajuda
 

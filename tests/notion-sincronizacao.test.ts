@@ -327,6 +327,26 @@ d("sincronização com o Notion (rota + banco)", () => {
       expect(chamadas.filter((c) => c.caminho.endsWith("/query"))).toHaveLength(2);
       expect(await doTeste()).toHaveLength(150);
     });
+    it("database com exatamente 2.000 linhas: lê tudo, não avisa corte e reconcilia", async () => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "Date"] });
+      estado.linhas = aulas(2000);
+      const chamadas = simularNotion(estado);
+      const p = sincronizar();
+      await vi.runAllTimersAsync();
+      const r = await p;
+      expect(r.corpo).toMatchObject({ sincronizados: 2000, truncado: false, reconciliado: true });
+      expect(chamadas.filter((c) => c.caminho.endsWith("/query"))).toHaveLength(20);
+    });
+    it("database com mais de 2.000 linhas: lê só 2.000, avisa o corte e não inativa nada", async () => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "Date"] });
+      estado.linhas = aulas(2001);
+      simularNotion(estado);
+      const p = sincronizar();
+      await vi.runAllTimersAsync();
+      const r = await p;
+      expect(r.corpo).toMatchObject({ sincronizados: 2000, truncado: true, reconciliado: false, inativados: 0 });
+      expect(await doTeste()).toHaveLength(2000);
+    });
   });
 
   describe("valores da coluna Feito e avisos por linha", () => {
