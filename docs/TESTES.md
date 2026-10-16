@@ -44,6 +44,7 @@ No CI (`.github/workflows/ci.yml`), o job `testes` sobe um Postgres, aplica as m
 | `provas.test.ts` | sem banco | Modelos de prova (ENEM, Fuvest, Unicamp), geração do identificador, meta por porcentagem, nota estimada (TRI), validação e contagem regressiva |
 | `plano.test.ts` | sem banco | Leitura de datas, importação do CSV do plano (erros por linha, chaves estáveis), neutralização de fórmulas e cálculo do resumo semanal |
 | `calendario.test.ts` | sem banco | CSV do calendário, datas do `.ics` e leitura do arquivo `.ics` |
+| `datas.test.ts` | sem banco | Datas em fuso diferente de UTC: o dia gravado não desloca ao formatar (07/10 não vira 06/10) e "hoje" usa o dia de Brasília |
 | `limite.test.ts` | sem banco | Limite diário de avaliações por IA e o esquema de validação do simulado |
 | `notion.test.ts` | sem banco | As funções do módulo `lib/notion.ts`: colunas e tipos aceitos, conversão de páginas, datas com horário no fuso de Brasília, o ID da database (puro, com hífens, ou o link inteiro) e a tradução de cada erro HTTP |
 | `rotas.test.ts` | **com banco** | Rotas da API de ponta a ponta: importação do plano e do calendário (e que repetir não duplica), marcar o dia como feito, resumo semanal, simulados, provas e exportação em CSV |

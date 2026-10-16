@@ -14,7 +14,7 @@ import {
 import { ehRedacao } from "@/lib/redacao";
 import { corSensor, margemParaAcertos, margemParaNota, SENSOR_DOT } from "@/lib/tri";
 import { GRAFICO } from "@/lib/cores";
-import { formatarDiaMes, hojeEmSaoPaulo, rotuloContagem } from "@/lib/datas";
+import { formatarDia, formatarDiaMes, hojeEmSaoPaulo, rotuloContagem } from "@/lib/datas";
 import EditarProva from "@/components/EditarProva";
 
 const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
@@ -129,7 +129,7 @@ export default function ProvaPage() {
         const chartData = area.resultados
           .filter((r) => !redacao || r.notaEstimada != null)
           .map((r) => ({
-            data: new Date(r.simulado.data).toLocaleDateString("pt-BR"),
+            data: formatarDia(r.simulado.data),
             valor: redacao ? r.notaEstimada! : r.acertos,
           }));
 

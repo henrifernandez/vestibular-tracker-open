@@ -64,6 +64,11 @@ export function formatarDiaMes(valor: string | Date): string {
   return new Date(valor).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 }
 
+// "07/10/2026" a partir de uma data do banco ou de um ISO, sem deslocar o dia no fuso do navegador.
+export function formatarDia(valor: string | Date): string {
+  return new Date(valor).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+}
+
 export function diaDaSemana(valor: string | Date): string {
   return new Date(valor).toLocaleDateString("pt-BR", { weekday: "short", timeZone: "UTC" }).replace(".", "");
 }

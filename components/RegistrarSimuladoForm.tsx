@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ehRedacao } from "@/lib/redacao";
+import { hojeEmSaoPaulo } from "@/lib/datas";
 
 type Area = { id: string; nome: string; totalQuestoes: number };
 type Prova = { id: string; slug: string; nome: string; areas: Area[] };
@@ -58,7 +59,7 @@ export default function RegistrarSimuladoForm({
 }) {
   const [provas, setProvas] = useState<Prova[] | null>(null);
   const [provaId, setProvaId] = useState("");
-  const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
+  const [data, setData] = useState(() => hojeEmSaoPaulo());
   const [nome, setNome] = useState("");
   const [linhas, setLinhas] = useState<Record<string, LinhaResultado>>({});
   const [enviando, setEnviando] = useState(false);

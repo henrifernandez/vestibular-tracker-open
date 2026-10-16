@@ -3,6 +3,7 @@ import Link from "next/link";
 const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 import RegistrarSimuladoForm, { textoRevisao, type ResultadoRevisao } from "@/components/RegistrarSimuladoForm";
+import { formatarDia } from "@/lib/datas";
 
 type Simulado = {
   id: string;
@@ -186,7 +187,7 @@ export default function ListaSimulados() {
                   {s.nome && <span className="text-xs text-ink/60">— {s.nome}</span>}
                 </div>
                 <p className="text-xs text-ink/60 mt-1">
-                  {new Date(s.data).toLocaleDateString("pt-BR")} · {totalAcertos}/{totalQuestoes}{" "}
+                  {formatarDia(s.data)} · {totalAcertos}/{totalQuestoes}{" "}
                   acertos no total
                 </p>
               </div>
