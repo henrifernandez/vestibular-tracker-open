@@ -10,7 +10,7 @@ Track mock exams, error-driven review, a study plan and a calendar during the fi
 
 ## Live preview
 
-A public instance runs **read-only with fictitious data** (nothing you click changes anything), so you can try the app without installing it. Its address is in the repository description. To use your own data, run your own copy (see "Quick start").
+A public instance runs **read-only with fictitious data** (nothing you click changes anything), so you can try the app without installing it. Open it at **[vestibular-tracker-open.vercel.app](https://vestibular-tracker-open.vercel.app)**. To use your own data, run your own copy (see "Quick start").
 
 ![Dashboard](docs/capturas/painel-1280.png)
 
@@ -26,7 +26,7 @@ Adding an exam, with the goal in a single question:
 - **Estimated score (TRI) for ENEM**, from the correct answers in each area, with configurable weights (each course weighs areas differently).
 - **AI essay grading** (optional, uses the Google Gemini API with your own key), with a score per competency.
 - **Error-driven review queue**: topics missed twice or more enter the queue automatically, with priority and history.
-- **Study plan and weekly summary**: import a CSV (or sync from Notion) and see the classes completed during the week by subject, next to the mock exams of the period.
+- **Study plan and weekly summary**: import a CSV (or sync from Notion) and see the classes completed during the week by subject, next to the mock exams of the period. Each day of the schedule has a checkbox to mark it as done.
 - **Calendar**: import an `.ics` file (Google Calendar, Apple, Outlook) or a CSV. Events of type exam become a countdown.
 - **Single-password login** and a read-only **demo mode**.
 

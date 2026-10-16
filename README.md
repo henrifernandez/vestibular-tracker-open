@@ -10,7 +10,7 @@ Acompanhe simulados, revisão por erros, plano de estudo e calendário na reta f
 
 ## Visualização ao vivo
 
-Há uma instância pública, **somente leitura e com dados fictícios** (nada do que você clicar altera dados), para você conhecer o app sem instalar. O endereço fica na descrição do repositório. Para usar com os seus dados, rode a sua própria cópia (veja o "Início rápido").
+Há uma instância pública, **somente leitura e com dados fictícios** (nada do que você clicar altera dados), para você conhecer o app sem instalar. Acesse em **[vestibular-tracker-open.vercel.app](https://vestibular-tracker-open.vercel.app)**. Para usar com os seus dados, rode a sua própria cópia (veja o "Início rápido").
 
 ![Painel](docs/capturas/painel-1280.png)
 
@@ -30,7 +30,7 @@ Cadastro de prova com a meta em uma pergunta só:
 - **Nota estimada (TRI) para o ENEM**, a partir dos acertos de cada área, com pesos configuráveis (cada curso pondera de um jeito).
 - **Redação avaliada por IA** (opcional, usa a API do Google Gemini com a sua chave), com nota por competência.
 - **Revisão por erros**: assuntos errados duas vezes ou mais entram sozinhos na fila de revisão, com prioridade e histórico.
-- **Plano de estudo e resumo semanal**: importe um CSV (ou sincronize com o Notion) e veja as aulas feitas na semana, por matéria, junto com os simulados do período.
+- **Plano de estudo e resumo semanal**: importe um CSV (ou sincronize com o Notion) e veja as aulas feitas na semana, por matéria, junto com os simulados do período. Cada dia do cronograma tem uma caixa para marcar como feito.
 - **Calendário**: importe um arquivo `.ics` (Google Calendar, Apple, Outlook) ou um CSV. Eventos do tipo prova viram contagem regressiva.
 - **Login por senha única** e **modo demonstração** somente leitura.
 
