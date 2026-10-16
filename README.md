@@ -157,6 +157,8 @@ npm test                 # testes unitários; os de rotas rodam quando DATABASE_
 
 Para a auditoria visual e de acessibilidade (capturas em 375, 768 e 1280 px e axe), com o app rodando em modo demonstração: `npx playwright install chromium` e `npx tsx scripts/auditoria-visual.ts`.
 
+O que cada arquivo de teste cobre, como rodar os testes com banco (com Docker, em dois comandos) e como acrescentar casos: [docs/TESTES.md](docs/TESTES.md).
+
 ## Como contribuir
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -140,7 +140,7 @@ npm run typecheck
 npm test
 ```
 
-Route tests run when `DATABASE_URL` points to a migrated Postgres. For the visual and accessibility audit (screenshots at 375, 768 and 1280 px plus axe), run the app in demo mode, then `npx playwright install chromium && npx tsx scripts/auditoria-visual.ts`.
+Route tests run when `DATABASE_URL` points to a migrated Postgres. For the visual and accessibility audit (screenshots at 375, 768 and 1280 px plus axe), run the app in demo mode, then `npx playwright install chromium && npx tsx scripts/auditoria-visual.ts`. What each test file covers, how to run the database tests with Docker, and how to add cases: [docs/TESTES.md](docs/TESTES.md) (Portuguese).
 
 ## Contributing
 

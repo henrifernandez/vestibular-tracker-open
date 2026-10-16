@@ -204,6 +204,10 @@ Em 2025 o Notion lançou uma versão nova da API em que uma database pode ter v�
 | Marquei um dia no app e ele **voltou desmarcado** | O Notion vence na sincronização | Marque o dia no Notion |
 | Sincronizou, mas **faltam dias** | Linhas sem data, ou fora de uma database original | Veja a lista de avisos abaixo do botão |
 
+## Como isso é testado
+
+A sincronização é coberta por testes automatizados que passam pela rota de verdade e pelo banco, com a API do Notion simulada: 26 casos, incluindo cada mensagem de erro da tabela acima. Detalhes em [TESTES.md](../TESTES.md). Eles não substituem uma execução com uma conta Notion real, e por isso o guia pede que você avise se algum passo estiver diferente do que aparece na sua tela.
+
 ## Pedindo ajuda
 
 Se mesmo assim não resolver, abra uma [issue](https://github.com/henrifernandez/vestibular-tracker-open/issues) ou mande uma mensagem ao autor. Para ajudar rápido, informe:

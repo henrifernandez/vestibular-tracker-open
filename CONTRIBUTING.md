@@ -20,6 +20,8 @@ npm test          # com DATABASE_URL apontando para um Postgres migrado, roda ta
 npm run build
 ```
 
+O que cada teste cobre e como rodar os testes com banco: [docs/TESTES.md](docs/TESTES.md).
+
 ## Padrões
 
 - **Commits**: Conventional Commits em português (`feat(plano): ...`, `fix(calendario): ...`, `docs: ...`).
