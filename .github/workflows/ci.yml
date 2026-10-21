@@ -25,8 +25,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://tracker:tracker@localhost:5432/tracker
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -60,8 +60,8 @@ jobs:
       DATABASE_URL: postgresql://tracker:tracker@localhost:5432/tracker
       DEMO_MODE: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -84,7 +84,7 @@ jobs:
       ADMIN_PASSWORD: senha-de-teste-do-ci
       SESSION_SECRET: segredo-de-teste-do-ci-com-32-caracteres
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Subir o app e o banco com o compose
         run: docker compose up --build --wait --wait-timeout 300
       - name: Conferir login, bloqueio sem sessão e acesso com sessão
